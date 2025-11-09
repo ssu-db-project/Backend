@@ -17,7 +17,7 @@ import lombok.Setter;
 public class UserCategory {
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id") // DB의 'user_id' 컬럼과 매핑
+    @JoinColumn(name = "id") // DB의 'id' 컬럼과 매핑
     private User user;
 
     @Id
