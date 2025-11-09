@@ -12,3 +12,4 @@ public class DbProjectApplication {
 		SpringApplication.run(DbProjectApplication.class, args);
 	}
 }
+

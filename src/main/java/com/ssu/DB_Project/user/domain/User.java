@@ -32,30 +32,14 @@ public class User {
 
     // 기본 인적 정보
     private Integer age;
+
     private String gender;
+
     private String location;
+
     private String job;
 
-    // 상세 인적 정보 (맞춤형 추천용)
-    @Column(name = "marital_status")
-    private String maritalStatus;
-
-    @Column(name = "income_quintile")
-    private Integer incomeQuintile;
-
-    @Column(name = "household_type")
-    private String householdType;
-
-    @Column(name = "housing_status")
-    private String housingStatus;
-
-    // 학생 전용 정보
-    @Column(name = "school_level")
-    private String schoolLevel;
-
-    @Column(name = "school_location")
-    private String schoolLocation;
-
-    @Column(name = "school_system")
-    private String schoolSystem;
+    // 'user'는 UserDetails 엔티티의 'user' 필드에 의해 매핑됨
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserDetails userDetails;
 }
