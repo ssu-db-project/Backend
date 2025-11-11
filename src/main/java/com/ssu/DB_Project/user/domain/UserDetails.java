@@ -24,7 +24,7 @@ public class UserDetails {
     private User user;
 
     // --- 1. 기존 상세 정보 ---
-    private String job; // (Users 테이블과 중복되므로, Users.job을 쓸지 상의 필요)
+    // private String job; // (Users 테이블과 중복되므로, Users.job을 쓸지 상의 필요)
 
     @Column(name = "marital_status")
     private String maritalStatus;
