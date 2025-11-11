@@ -16,7 +16,7 @@ CREATE TABLE User_Details (
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
 
     -- 1. 기존 상세 정보
-    job VARCHAR(100),            -- 직업 (대분류)
+    -- job VARCHAR(100),            -- 직업 (대분류)
     marital_status VARCHAR(20),  -- 혼인 여부
     income_quintile INT,         -- 소득분위
     housing_status VARCHAR(30),  -- 주택 상태
