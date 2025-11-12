@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### OPENAI-KEY ###
+.env
+".env" 
+".env" 
