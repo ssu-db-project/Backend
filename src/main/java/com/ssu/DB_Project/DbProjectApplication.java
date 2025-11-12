@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 public class DbProjectApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DbProjectApplication.class, args);
+        SpringApplication.run(DbProjectApplication.class, args);
 	}
 }
 
