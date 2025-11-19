@@ -1,6 +1,6 @@
 package com.ssu.DB_Project.crawl.sitecrawl;
 
-import com.ssu.DB_Project.policy.repository.PolicyRepository;
+import unused.policy.repository.PolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 public class YouthCenterCrawler implements SiteCrawler {
 
     // DB 저장용
-    @Autowired
-    private PolicyRepository policyRepository;
+    //@Autowired
+    //private PolicyRepository policyRepository;
 
     // GPT 모듈 주입
 
