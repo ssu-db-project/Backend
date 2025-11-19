@@ -19,4 +19,6 @@ public record ProcessedPolicy(
         // 날짜 (camelCase로 변경)
         LocalDate supportStartDate, // support_start_date -> supportStartDate
         LocalDate supportEndDate    // support_end_date -> supportEndDate
+//        String supportStartDate,
+//        String supportEndDate
 ) {}
