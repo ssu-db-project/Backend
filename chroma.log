@@ -189,3 +189,523 @@ ValueError: Collection policy_embeddings does not exist.
 [36mDEBUG[0m:    [12-11-2025 11:43:32] Stopping component OpenTelemetryClient
 [32mINFO[0m:     [12-11-2025 11:43:32] Application shutdown complete.
 [32mINFO[0m:     [12-11-2025 11:43:32] Finished server process [[36m2948[0m]
+[33mWARNING[0m:  [19-11-2025 18:45:08] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [19-11-2025 18:45:11] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component System
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component Posthog
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 18:45:11] Starting component SegmentAPI
+[32mINFO[0m:     [19-11-2025 18:45:11] Started server process [[36m12168[0m]
+[32mINFO[0m:     [19-11-2025 18:45:11] Waiting for application startup.
+[32mINFO[0m:     [19-11-2025 18:45:11] Application startup complete.
+[32mINFO[0m:     [19-11-2025 18:45:11] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[31mERROR[0m:    [19-11-2025 18:46:39] Collection policy_embeddings does not exist.
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 192, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 78, in catch_exceptions_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |   File "C:\Users\dldms\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 92, in check_http_version_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 130, in wrapper
+    |     return await f(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 662, in get_collection
+    |     await to_thread.run_sync(
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 143, in wrapper
+    |     return f(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\api\segment.py", line 270, in get_collection
+    |     raise ValueError(f"Collection {name} does not exist.")
+    | ValueError: Collection policy_embeddings does not exist.
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 78, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+  File "C:\Users\dldms\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 92, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 130, in wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 662, in get_collection
+    await to_thread.run_sync(
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 143, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\api\segment.py", line 270, in get_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection policy_embeddings does not exist.
+[32mINFO[0m:     [19-11-2025 18:46:39] 127.0.0.1:55926 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 500
+[32mINFO[0m:     [19-11-2025 18:46:40] 127.0.0.1:55926 - "POST /api/v1/collections HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 18:53:46] 127.0.0.1:51901 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 19:04:48] 127.0.0.1:53146 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 19:40:05] 127.0.0.1:63835 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[36mDEBUG[0m:    [19-11-2025 19:40:33] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [19-11-2025 19:40:33] 127.0.0.1:63835 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 20:08:59] Shutting down
+[32mINFO[0m:     [19-11-2025 20:09:00] Waiting for application shutdown.
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component System
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component SegmentAPI
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component PersistentLocalHnswSegment
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component Posthog
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 20:09:00] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [19-11-2025 20:09:00] Application shutdown complete.
+[32mINFO[0m:     [19-11-2025 20:09:00] Finished server process [[36m12168[0m]
+[33mWARNING[0m:  [19-11-2025 20:42:00] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [19-11-2025 20:42:00] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component System
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component Posthog
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 20:42:00] Starting component SegmentAPI
+[32mINFO[0m:     [19-11-2025 20:42:00] Started server process [[36m17292[0m]
+[32mINFO[0m:     [19-11-2025 20:42:00] Waiting for application startup.
+[32mINFO[0m:     [19-11-2025 20:42:00] Application startup complete.
+[32mINFO[0m:     [19-11-2025 20:42:00] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [19-11-2025 20:42:28] 127.0.0.1:51437 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[36mDEBUG[0m:    [19-11-2025 20:44:02] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [19-11-2025 20:44:02] 127.0.0.1:63252 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[33mWARNING[0m:  [19-11-2025 20:44:25] Number of requested results 5 is greater than number of elements in index 2, updating n_results = 2
+[32mINFO[0m:     [19-11-2025 20:44:26] 127.0.0.1:63252 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/query HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 20:44:57] Shutting down
+[32mINFO[0m:     [19-11-2025 20:44:57] Waiting for application shutdown.
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component System
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component SegmentAPI
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component PersistentLocalHnswSegment
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component Posthog
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 20:44:57] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [19-11-2025 20:44:57] Application shutdown complete.
+[32mINFO[0m:     [19-11-2025 20:44:57] Finished server process [[36m17292[0m]
+[33mWARNING[0m:  [19-11-2025 21:05:01] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [19-11-2025 21:05:01] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component System
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component Posthog
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 21:05:01] Starting component SegmentAPI
+[32mINFO[0m:     [19-11-2025 21:05:01] Started server process [[36m23148[0m]
+[32mINFO[0m:     [19-11-2025 21:05:01] Waiting for application startup.
+[32mINFO[0m:     [19-11-2025 21:05:01] Application startup complete.
+[32mINFO[0m:     [19-11-2025 21:05:01] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [19-11-2025 21:05:18] 127.0.0.1:53960 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 21:11:08] 127.0.0.1:61205 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 21:47:30] 127.0.0.1:64927 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 21:52:54] 127.0.0.1:56409 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 21:56:43] 127.0.0.1:63129 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[36mDEBUG[0m:    [19-11-2025 21:57:15] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [19-11-2025 21:57:15] 127.0.0.1:51917 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 21:57:32] 127.0.0.1:51917 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:11:27] 127.0.0.1:63767 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:11:43] 127.0.0.1:63767 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:11:55] 127.0.0.1:63767 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:12:26] 127.0.0.1:63799 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:16:28] 127.0.0.1:56252 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:17:00] 127.0.0.1:56267 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:17:11] 127.0.0.1:56267 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:21:12] 127.0.0.1:57773 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:21:37] 127.0.0.1:57773 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:21:49] 127.0.0.1:57773 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:25:28] 127.0.0.1:56466 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:25:43] 127.0.0.1:56466 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:36:57] 127.0.0.1:65330 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:37:16] 127.0.0.1:65330 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:37:51] 127.0.0.1:58639 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:37:57] 127.0.0.1:58639 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/query HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:53:06] 127.0.0.1:60788 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:56:25] 127.0.0.1:53169 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/add HTTP/1.1" 201
+[32mINFO[0m:     [19-11-2025 22:56:28] 127.0.0.1:53169 - "POST /api/v1/collections/609cd62e-b677-44a8-90ed-1cbb67490a34/query HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 22:59:02] Shutting down
+[32mINFO[0m:     [19-11-2025 22:59:02] Waiting for application shutdown.
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component System
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component SegmentAPI
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component PersistentLocalHnswSegment
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component Posthog
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 22:59:02] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [19-11-2025 22:59:02] Application shutdown complete.
+[32mINFO[0m:     [19-11-2025 22:59:02] Finished server process [[36m23148[0m]
+[33mWARNING[0m:  [19-11-2025 22:59:10] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [19-11-2025 22:59:10] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component System
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component Posthog
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 22:59:10] Starting component SegmentAPI
+[32mINFO[0m:     [19-11-2025 22:59:10] Started server process [[36m13660[0m]
+[32mINFO[0m:     [19-11-2025 22:59:10] Waiting for application startup.
+[32mINFO[0m:     [19-11-2025 22:59:10] Application startup complete.
+[32mINFO[0m:     [19-11-2025 22:59:10] Uvicorn running on [1mhttp://localhost:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [19-11-2025 22:59:37] 127.0.0.1:57776 - "GET /api/v1/collections/policy_embeddings HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 23:02:08] ::1:60352 - "GET /api/v1/collections HTTP/1.1" 200
+[32mINFO[0m:     [19-11-2025 23:02:08] ::1:60352 - "GET /favicon.ico HTTP/1.1" 404
+[32mINFO[0m:     [19-11-2025 23:02:57] Shutting down
+[32mINFO[0m:     [19-11-2025 23:02:58] Waiting for application shutdown.
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component System
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component SegmentAPI
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component Posthog
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component SqliteDB
+[36mDEBUG[0m:    [19-11-2025 23:02:58] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [19-11-2025 23:02:58] Application shutdown complete.
+[32mINFO[0m:     [19-11-2025 23:02:58] Finished server process [[36m13660[0m]
+[33mWARNING[0m:  [20-11-2025 19:32:22] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [20-11-2025 19:32:22] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component System
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component SqliteDB
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component Posthog
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [20-11-2025 19:32:22] Starting component SegmentAPI
+[32mINFO[0m:     [20-11-2025 19:32:22] Started server process [[36m10512[0m]
+[32mINFO[0m:     [20-11-2025 19:32:22] Waiting for application startup.
+[32mINFO[0m:     [20-11-2025 19:32:22] Application startup complete.
+[32mINFO[0m:     [20-11-2025 19:32:22] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [20-11-2025 19:44:30] Shutting down
+[32mINFO[0m:     [20-11-2025 19:44:30] Waiting for application shutdown.
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component System
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component SegmentAPI
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component Posthog
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component SqliteDB
+[36mDEBUG[0m:    [20-11-2025 19:44:30] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [20-11-2025 19:44:30] Application shutdown complete.
+[32mINFO[0m:     [20-11-2025 19:44:30] Finished server process [[36m10512[0m]
+[33mWARNING[0m:  [20-11-2025 21:28:53] chroma_server_nofile is not supported on Windows. chroma_server_nofile will not be set.
+[32mINFO[0m:     [20-11-2025 21:28:54] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component System
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component SqliteDB
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component QuotaEnforcer
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component Posthog
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [20-11-2025 21:28:54] Starting component SegmentAPI
+[32mINFO[0m:     [20-11-2025 21:28:54] Started server process [[36m7644[0m]
+[32mINFO[0m:     [20-11-2025 21:28:54] Waiting for application startup.
+[32mINFO[0m:     [20-11-2025 21:28:54] Application startup complete.
+[32mINFO[0m:     [20-11-2025 21:28:54] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[31mERROR[0m:    [20-11-2025 21:29:12] Collection univ_embeddings does not exist.
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 192, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 75, in catch_exceptions_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |   File "C:\Users\dldms\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 89, in check_http_version_middleware
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 133, in async_wrapper
+    |     return await f(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 626, in get_collection
+    |     await to_thread.run_sync(
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    |     return await future
+    |            ^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    |     result = context.run(func, *args)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 146, in wrapper
+    |     return f(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\api\segment.py", line 262, in get_collection
+    |     raise ValueError(f"Collection {name} does not exist.")
+    | ValueError: Collection univ_embeddings does not exist.
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 75, in catch_exceptions_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+  File "C:\Users\dldms\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 89, in check_http_version_middleware
+    return await call_next(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 133, in async_wrapper
+    return await f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\server\fastapi\__init__.py", line 626, in get_collection
+    await to_thread.run_sync(
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2485, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 976, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\telemetry\opentelemetry\__init__.py", line 146, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dldms\Desktop\Database\team_project\Backend\venv\Lib\site-packages\chromadb\api\segment.py", line 262, in get_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection univ_embeddings does not exist.
+[32mINFO[0m:     [20-11-2025 21:29:12] 127.0.0.1:58773 - "GET /api/v1/collections/univ_embeddings HTTP/1.1" 500
+[32mINFO[0m:     [20-11-2025 21:29:12] 127.0.0.1:58773 - "POST /api/v1/collections HTTP/1.1" 200
+[32mINFO[0m:     [20-11-2025 21:37:50] 127.0.0.1:63655 - "GET /api/v1/collections/univ_embeddings HTTP/1.1" 200
+[36mDEBUG[0m:    [20-11-2025 21:38:02] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [20-11-2025 21:38:02] 127.0.0.1:63655 - "POST /api/v1/collections/72bb96dc-6a0c-4808-b349-a2f02b9d31d9/add HTTP/1.1" 201
+[32mINFO[0m:     [20-11-2025 21:38:20] 127.0.0.1:63655 - "POST /api/v1/collections/72bb96dc-6a0c-4808-b349-a2f02b9d31d9/add HTTP/1.1" 201
+[33mWARNING[0m:  [20-11-2025 21:38:28] Number of requested results 5 is greater than number of elements in index 2, updating n_results = 2
+[32mINFO[0m:     [20-11-2025 21:38:28] 127.0.0.1:63655 - "POST /api/v1/collections/72bb96dc-6a0c-4808-b349-a2f02b9d31d9/query HTTP/1.1" 200
+[33mWARNING[0m:  [20-11-2025 21:38:41] Number of requested results 5 is greater than number of elements in index 2, updating n_results = 2
+[32mINFO[0m:     [20-11-2025 21:38:41] 127.0.0.1:63655 - "POST /api/v1/collections/72bb96dc-6a0c-4808-b349-a2f02b9d31d9/query HTTP/1.1" 200
+[32mINFO[0m:     [20-11-2025 21:39:05] Shutting down
+[32mINFO[0m:     [20-11-2025 21:39:05] Waiting for application shutdown.
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component System
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component SegmentAPI
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component PersistentLocalHnswSegment
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component LocalSegmentManager
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component Posthog
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component QuotaEnforcer
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component SqliteDB
+[36mDEBUG[0m:    [20-11-2025 21:39:05] Stopping component OpenTelemetryClient
+[32mINFO[0m:     [20-11-2025 21:39:05] Application shutdown complete.
+[32mINFO[0m:     [20-11-2025 21:39:05] Finished server process [[36m7644[0m]

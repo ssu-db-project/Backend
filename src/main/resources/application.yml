@@ -37,11 +37,10 @@ openai:
 langchain:
   chroma:
     base-url: http://localhost:8000
-    collection-name: policy_embeddings
+    collection-name: univ_embeddings
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info
-
