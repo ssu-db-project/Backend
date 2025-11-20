@@ -1,6 +1,7 @@
 package com.ssu.DB_Project.chatbot.config;
 
 import java.time.Duration;
+
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -20,7 +21,6 @@ public class LangChainConfig {
     @Value("${openai.model}") private String openaiModel;
     @Value("${openai.temperature}") private double openaiTemperature;
 
-    // ▼ 새로 추가
     @Value("${langchain.chroma.base-url}") private String chromaBaseUrl;
     @Value("${langchain.chroma.collection-name}") private String chromaCollection;
 
@@ -42,11 +42,11 @@ public class LangChainConfig {
 
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
-        // ✅ 서버 모드로 Chroma 연결 (권장)
+        // ❗ 반드시 builder() 방식 사용해야 함
         return ChromaEmbeddingStore.builder()
-                .baseUrl(chromaBaseUrl)              // 예: http://localhost:8000
-                .collectionName(chromaCollection)    // 예: policy_embeddings
-                .timeout(Duration.ofSeconds(30))     // 선택
+                .baseUrl(chromaBaseUrl)          // http://localhost:8000
+                .collectionName(chromaCollection) // policy_embeddings
+                .timeout(Duration.ofSeconds(30))
                 .build();
     }
 

@@ -29,7 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -74,11 +74,13 @@ public class User extends BaseEntity{
 
     // 관심 공지 카테고리 (OneToMany - 중간 테이블 엔티티 사용)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @Builder.Default
     private Set<UserInterestCategory> interestCategories = new HashSet<>();
 
     // 관심 분야 (OneToMany - 중간 테이블 엔티티 사용)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     @Builder.Default
     private Set<UserInterestField> interestFields = new HashSet<>();
 
