@@ -38,5 +38,23 @@ out/
 
 ### OPENAI-KEY ###
 .env
-".env" 
-".env" 
+
+### Chroma/ vector DB ###
+chroma/
+chroma_data/A
+chromadb/
+vectore_store.
+
+### Chroma DB files ###
+*.bin
+*.db
+
+### Chroma log ###
+chroma.log/
+
+### Python virtual environment ###
+venv/
+
+# Replay logs
+replay_*.log
+hs_err_pid*.logv

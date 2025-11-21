@@ -18,3 +18,18 @@ INSERT INTO program_category (id, name) VALUES
 ('prg_1', '상담/멘토링/코칭'),
 ('prg_2', '공모전/경진대회'),
 ('prg_3', '특강/워크숍');
+
+INSERT INTO announcement_department (id, name) VALUES
+('D001', '소프트웨어학부'),
+('D002', 'AI융합학부'),
+('D003', '전자정보공학부'),
+('D999', '기타');
+
+INSERT INTO college (id, name)
+VALUES (1, '숭실대학교');
+
+INSERT INTO department (id, name, college_id)
+VALUES ('D001', '소프트웨어학부', 1);
+
+INSERT INTO program_organization (id, name)
+VALUES ('org_1', '소프트웨어학부');
