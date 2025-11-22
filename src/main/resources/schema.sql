@@ -14,10 +14,6 @@ CREATE TABLE announcement_category (
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE announcement_department (
-    id VARCHAR(20) PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
-);
 
 CREATE TABLE program_category (
     id VARCHAR(20) PRIMARY KEY,
@@ -29,6 +25,10 @@ CREATE TABLE program_organization (
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
+CREATE TABLE announcement_department (
+    id VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
 -- 2. 의존성이 있는 테이블들 (Department가 College를 참조)
 CREATE TABLE department (
     id VARCHAR(20) PRIMARY KEY,
@@ -54,11 +54,11 @@ CREATE TABLE users (
 );
 
 CREATE TABLE announcement (
-    id VARCHAR(20) PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     source VARCHAR(50) NOT NULL,
-    original_id VARCHAR(100) NOT NULL,
     category_id VARCHAR(20),
     department_id VARCHAR(20),
+    departmentName VARCHAR(20),
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     summary TEXT,
@@ -67,8 +67,7 @@ CREATE TABLE announcement (
     status VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES announcement_category(id),
-    FOREIGN KEY (department_id) REFERENCES announcement_department(id),
-    UNIQUE (source, original_id)
+    FOREIGN KEY (department_id) REFERENCES announcement_department(id)
 );
 
 CREATE TABLE program (
@@ -94,11 +93,11 @@ CREATE TABLE program (
 
 -- 4. 하위 종속 테이블 및 매핑 테이블
 CREATE TABLE announcement_file (
-    id VARCHAR(20) PRIMARY KEY,
-    announcement_id VARCHAR(20) NOT NULL,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    announcement_id BIGINT NOT NULL, -- announcement.id와 타입 일치(BIGINT)
     file_url VARCHAR(512) NOT NULL,
     file_name VARCHAR(255),
-    FOREIGN KEY (announcement_id) REFERENCES announcement(id)
+    FOREIGN KEY (announcement_id) REFERENCES announcement(id) ON DELETE CASCADE
 );
 
 CREATE TABLE user_interest_category (

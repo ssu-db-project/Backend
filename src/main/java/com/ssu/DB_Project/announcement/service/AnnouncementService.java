@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ssu.DB_Project.announcement.domain.Announcement;
 import com.ssu.DB_Project.announcement.domain.AnnouncementCategory;
 import com.ssu.DB_Project.announcement.domain.AnnouncementDepartment;
+import com.ssu.DB_Project.announcement.domain.AnnouncementFile;
 import com.ssu.DB_Project.announcement.dto.AnnouncementProcessRequest;
 import com.ssu.DB_Project.announcement.dto.ProcessedAnnouncement;
 import com.ssu.DB_Project.announcement.repository.AnnouncementCategoryRepository;
 import com.ssu.DB_Project.announcement.repository.AnnouncementDepartmentRepository;
+import com.ssu.DB_Project.announcement.repository.AnnouncementFileRepository;
 import com.ssu.DB_Project.announcement.repository.AnnouncementRepository;
 import com.ssu.DB_Project.chatbot.VectorIngestionService;
 import dev.langchain4j.data.message.UserMessage;
@@ -27,7 +29,7 @@ public class AnnouncementService {
     private final AnnouncementDepartmentRepository departmentRepository;
     private final ChatLanguageModel chatModel;
     private final VectorIngestionService vectorIngestionService;
-
+    private final AnnouncementFileRepository announcementFileRepository;
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -44,7 +46,6 @@ public class AnnouncementService {
               "content": "...",
               "summary": "...",
               "source": "...",
-              "originalId": "...",
               "status": "...",
               "postedAt": "YYYY-MM-DDTHH:MM:SS"
             }
@@ -75,16 +76,10 @@ public class AnnouncementService {
                 .findByName(request.categoryName())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 카테고리: " + request.categoryName()));
 
-        AnnouncementDepartment department = departmentRepository
-                .findByName(request.departmentName())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 부서: " + request.departmentName()));
-
         Announcement announcement = Announcement.builder()
-                .id(aiData.originalId()) // originalId를 PK로 사용할 경우
                 .source(aiData.source())
-                .originalId(aiData.originalId())
                 .category(category)
-                .department(department)
+                .departmentName(request.departmentName())
                 .title(aiData.title())
                 .content(aiData.content())
                 .summary(aiData.summary())
@@ -94,10 +89,24 @@ public class AnnouncementService {
                 .build();
 
         Announcement saved = announcementRepository.save(announcement);
+        // 5. 💡 [추가] 첨부파일 저장 로직
+        if (request.files() != null && !request.files().isEmpty()) {
+            for (AnnouncementProcessRequest.FileDto fileDto : request.files()) {
 
+                // 파일 엔티티 생성
+                AnnouncementFile fileEntity = AnnouncementFile.builder()
+                    .announcement(saved)    // 연관관계 설정
+                    .fileName(fileDto.fileName())
+                    .fileUrl(fileDto.fileUrl())
+                    .build();
+
+                announcementFileRepository.save(fileEntity);
+            }
+        }
         // 벡터 DB 저장
         vectorIngestionService.embedAnnouncement(saved);
 
         return saved;
     }
+
 }
