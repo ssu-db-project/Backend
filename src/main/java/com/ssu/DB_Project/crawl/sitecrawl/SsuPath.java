@@ -1,10 +1,9 @@
 package com.ssu.DB_Project.crawl.sitecrawl;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class YouthCenterCrawler implements SiteCrawler {
+public class SsuPath implements SiteCrawler {
 
     // DB 저장용
     //@Autowired
@@ -25,7 +24,7 @@ public class YouthCenterCrawler implements SiteCrawler {
     // 크롤링 사이트명 제출
     @Override
     public String getSiteName() {
-        return "온라인 청년 센터";
+        return "슈패스";
     }
 
 }

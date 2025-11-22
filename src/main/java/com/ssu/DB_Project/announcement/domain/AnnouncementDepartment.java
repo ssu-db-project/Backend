@@ -23,6 +23,6 @@ public class AnnouncementDepartment {
     @Column(length = 20)
     private String id;
 
-    @Column(length = 100, nullable = false, unique = true)
+    @Column(length = 100)
     private String name;
 }
