@@ -108,5 +108,64 @@ public class AnnouncementService {
 
         return saved;
     }
+    @Transactional
+    public Announcement processAndSave2(AnnouncementProcessRequest request) {
+
+        // ---------------------------------------------------------
+        // 🛑 [TEST MODE] AI 분석 로직 주석 처리 (API 비용 절약 & DB 테스트 집중)
+        // ---------------------------------------------------------
+        /*
+        String systemPrompt = "...";
+        String prompt = systemPrompt + "\n\n공지 원문:\n" + request.content();
+        String rawResponse = chatModel.generate(UserMessage.from(prompt)).content().text();
+        ProcessedAnnouncement aiData = mapper.readValue(rawResponse, ProcessedAnnouncement.class);
+        */
+        System.out.println("🚧 [TEST] AI 분석을 건너뛰고 임의의 값을 사용합니다.");
+
+        // 1. 카테고리 매핑 (DB에 '학사', '장학' 등이 미리 들어가 있어야 함)
+        AnnouncementCategory category = categoryRepository
+            .findByName(request.categoryName())
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 카테고리: " + request.categoryName()));
+
+        // 2. 공지사항 엔티티 생성 (임의 값 주입)
+        Announcement announcement = Announcement.builder()
+            .source("테스트 출처")               // aiData.source() 대신 임의 값
+            .category(category)
+            .departmentName("테스트 부서")       // request.departmentName() 대신 임의 값 가능
+            .title("DB 저장 테스트 제목입니다")    // aiData.title() 대신 임의 값
+            .content("DB 저장이 잘 되는지 확인하는 본문 내용입니다.") // aiData.content() 대신 임의 값
+            .summary("테스트 요약입니다.")        // aiData.summary() 대신 임의 값
+
+            // 💡 URL은 Unique 제약조건이 있으므로, 테스트할 때마다 충돌나지 않게 랜덤값 추가
+            .url(request.url() + "?test=" + java.util.UUID.randomUUID().toString().substring(0, 5))
+
+            .postedAt(java.time.LocalDateTime.now()) // 현재 시간
+            .status("진행")
+            .build();
+
+        // 3. MySQL 저장 (부모 테이블)
+        Announcement saved = announcementRepository.save(announcement);
+        System.out.println("💾 [MySQL] 공지사항 저장 성공! ID: " + saved.getId());
+
+        // 4. 첨부파일 저장 (자식 테이블)
+        if (request.files() != null && !request.files().isEmpty()) {
+            for (AnnouncementProcessRequest.FileDto fileDto : request.files()) {
+                AnnouncementFile fileEntity = AnnouncementFile.builder()
+                    .announcement(saved)
+                    .fileName(fileDto.fileName())
+                    .fileUrl(fileDto.fileUrl())
+                    .build();
+
+                announcementFileRepository.save(fileEntity);
+                System.out.println("   📎 [MySQL] 파일 저장 성공: " + fileDto.fileName());
+            }
+        }
+
+        // 5. 벡터 DB 저장 (주석 처리 유지)
+        // vectorIngestionService.embedAnnouncement(saved);
+        System.out.println("⏩ [Pass] 벡터 DB 저장은 건너뜁니다.");
+
+        return saved;
+    }
 
 }

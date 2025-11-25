@@ -46,7 +46,7 @@ public class SsuAnnouncement implements SiteCrawler {
     private static final String BASE_URL = "https://scatch.ssu.ac.kr/%ea%b3%b5%ec%a7%80%ec%82%ac%ed%95%ad/";
 
     // 💡 몇 페이지까지 긁을지 설정 (테스트 땐 2~3, 실제론 10 등등)
-    private static final int MAX_PAGE = 2;
+    private static final int MAX_PAGE = 1;
 
     @Override
     public void crawl() {

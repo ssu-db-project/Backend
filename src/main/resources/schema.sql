@@ -71,7 +71,7 @@ CREATE TABLE announcement (
 );
 
 CREATE TABLE program (
-    id VARCHAR(20) PRIMARY KEY,
+    id  BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     subtitle VARCHAR(255),
     category_id VARCHAR(20),

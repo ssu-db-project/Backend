@@ -1,5 +1,6 @@
 package com.ssu.DB_Project.chatbot.config;
 
+import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 import java.time.Duration;
 
 import dev.langchain4j.data.segment.TextSegment;
@@ -13,7 +14,7 @@ import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
 @Configuration
 public class LangChainConfig {
 
@@ -43,11 +44,12 @@ public class LangChainConfig {
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
         // ❗ 반드시 builder() 방식 사용해야 함
-        return ChromaEmbeddingStore.builder()
-                .baseUrl(chromaBaseUrl)          // http://localhost:8000
-                .collectionName(chromaCollection) // policy_embeddings
-                .timeout(Duration.ofSeconds(30))
-                .build();
+//        return ChromaEmbeddingStore.builder()
+//                .baseUrl(chromaBaseUrl)          // http://localhost:8000
+//                .collectionName(chromaCollection) // policy_embeddings
+//                .timeout(Duration.ofSeconds(30))
+//                .build();
+        return new InMemoryEmbeddingStore<>();
     }
 
     @Bean

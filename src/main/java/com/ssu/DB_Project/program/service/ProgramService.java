@@ -81,7 +81,6 @@ public class ProgramService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
 
         Program program = Program.builder()
-                .id(generateProgramId())  // 크롤러에서 id를 줄 거면 그걸 쓰고, 아니면 별도 전략 사용
                 .title(aiData.title())
                 .subtitle(aiData.subtitle())
                 .category(category)

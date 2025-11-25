@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: demo-langchain
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
 
   datasource:
     url: jdbc:h2:mem:testdb
@@ -17,7 +21,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show_sql: true
@@ -30,6 +34,7 @@ logging:
 
 # OpenAI API 설정
 openai:
+  api-key: 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
   model: "gpt-4o-mini"
   temperature: 0.7
 
