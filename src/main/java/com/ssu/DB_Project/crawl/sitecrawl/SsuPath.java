@@ -131,13 +131,13 @@ public class SsuPath implements SiteCrawler {
                     // 상세 URL 조립
                     String finalUrl = SSUPATH_INFO_URL + "?encSddpbSeq=" + encSeq;
 
-                    // 2. 부서 및 카테고리 추출
+                    // 2. 부서  추출
                     String dept = null;
-                    String category = null;
+
 
                     try {
                         dept = webElement.findElement(By.cssSelector(".major_type li.first")).getText().trim();
-                        category = webElement.findElement(By.cssSelector(".major_type li.last")).getText().trim();
+                        //category = webElement.findElement(By.cssSelector(".major_type li.last")).getText().trim();
                     } catch (Exception e) {
                         // 못 찾으면 null 유지
                     }
@@ -167,7 +167,7 @@ public class SsuPath implements SiteCrawler {
 
                     }
 
-                    crawlTargetList.add(new CrawlTarget(title, finalUrl, dateInfo, status, dept, category));
+                    crawlTargetList.add(new CrawlTarget(title, finalUrl, dateInfo, status, dept));
 
 
                 } catch (Exception e) {
@@ -178,7 +178,7 @@ public class SsuPath implements SiteCrawler {
             System.out.println("총 수집된 데이터: " + crawlTargetList.size() + "개");
 
             for (CrawlTarget target : crawlTargetList) {
-                System.out.println(" - [" + target.category() + "] " + target.title());
+                //System.out.println(" - [" + target.category() + "] " + target.title());
                 System.out.println("   -> " + target.url());
             }
 
@@ -203,10 +203,23 @@ public class SsuPath implements SiteCrawler {
                     String contentBody = "";
 
                     try {
-                        contentBody = webDriver.findElement(By.cssSelector(".ck-contentEditDiv")).getText();
+                        contentBody = webDriver.findElement(By.id("tilesContent")).getText(); //신청기간때문에 ai한테 전체 넘겼는데 수정해야할수도있음
+                        //contentBody = webDriver.findElement(By.cssSelector(".ck-contentEditDiv")).getText();
                     } catch (Exception e) {
                         System.out.println("   ⚠️ .td_box 없음, 전체 본문 수집 시도");
                         contentBody = webDriver.findElement(By.tagName("body")).getText();
+                    }
+                    //카테고리 수집
+                    String category = null;
+                    try {
+                        WebElement categoryCell = webDriver.findElement(By.xpath("//th[contains(text(), '프로그램 분류')]/following-sibling::td"));
+
+                        // 2. 텍스트 추출 및 공백 제거 (HTML에 탭과 공백이 많으므로 trim 필수)
+                        category = categoryCell.getText().trim();
+
+                        System.out.println("   🏷️ 추출된 분류: " + category);
+                    } catch (Exception e) {
+                        System.out.println("카테고리 수집 실패");
                     }
 
                     // 첨부파일 추후 협의 후 구현
@@ -235,8 +248,9 @@ public class SsuPath implements SiteCrawler {
                     ProgramProcessRequest programProcessRequest = new ProgramProcessRequest(
                             fullContent,
                             crawlTarget.url(),
-                            crawlTarget.category(),
+                            category,
                             crawlTarget.dept()
+
                             // dbFiles 추후 구현
                     );
 
@@ -291,7 +305,6 @@ public class SsuPath implements SiteCrawler {
             String url,
             String date,
             String status,
-            String dept,
-            String category
+            String dept
     ) {}
 }

@@ -5,6 +5,7 @@ import com.ssu.DB_Project.announcement.dto.AnnouncementProcessRequest;
 import com.ssu.DB_Project.announcement.dto.AnnouncementChatRequest;
 import com.ssu.DB_Project.announcement.service.AnnouncementService;
 import com.ssu.DB_Project.announcement.service.AnnouncementChatService;
+import com.ssu.DB_Project.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,4 +29,8 @@ public class AnnouncementController {
         String answer = announcementChatService.ask(request.userId(), request.question());
         return ResponseEntity.ok(answer);
     }
+//    @GetMapping("")
+//    public ResponseEntity<ApiResponse<>>(){
+//
+//    }
 }

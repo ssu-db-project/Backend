@@ -45,7 +45,7 @@ public class AnnouncementService {
               "title": "...",
               "content": "...",
               "summary": "...",
-              "source": "...",
+              //"source": "...",
               "status": "...",
               "postedAt": "YYYY-MM-DDTHH:MM:SS"
             }
@@ -77,7 +77,7 @@ public class AnnouncementService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 카테고리: " + request.categoryName()));
 
         Announcement announcement = Announcement.builder()
-                .source(aiData.source())
+                //.source(aiData.source())
                 .category(category)
                 .departmentName(request.departmentName())
                 .title(aiData.title())

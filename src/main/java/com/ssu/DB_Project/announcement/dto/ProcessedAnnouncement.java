@@ -7,7 +7,7 @@ public record ProcessedAnnouncement(
         String title,
         String content,
         String summary,
-        String source,
+        //String source,
         String status,
         LocalDateTime postedAt
 ) {}

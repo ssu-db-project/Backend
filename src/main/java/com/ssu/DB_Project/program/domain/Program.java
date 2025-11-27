@@ -42,6 +42,9 @@ public class Program extends BaseEntity {
     @JoinColumn(name = "organization_id")
     private ProgramOrganization organization;
 
+    @Column(name = "organization_name")
+    private String organizationName;
+
     @Column(name = "operation_method", length = 50)
     private String operationMethod;
 
