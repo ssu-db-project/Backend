@@ -38,9 +38,9 @@ public class Program extends BaseEntity {
     @JoinColumn(name = "category_id")
     private ProgramCategory category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id")
-    private ProgramOrganization organization;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "organization_id")
+//    private ProgramOrganization organization;
 
     @Column(name = "organization_name")
     private String organizationName;

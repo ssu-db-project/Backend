@@ -37,17 +37,17 @@ public class Announcement extends BaseEntity {
     @Column(length = 20)
     private Long id;
 
-    @Column(length = 50)
-    private String source;
+//    @Column(length = 50)
+//    private String source;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private AnnouncementCategory category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
-    private AnnouncementDepartment department;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "department_id")
+//    private AnnouncementDepartment department;
 
     @Column(length = 100,name = "department_name")
     private String departmentName;

@@ -5,12 +5,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ssu.DB_Project.announcement.domain.Announcement;
 import com.ssu.DB_Project.announcement.domain.AnnouncementCategory;
-import com.ssu.DB_Project.announcement.domain.AnnouncementDepartment;
 import com.ssu.DB_Project.announcement.domain.AnnouncementFile;
 import com.ssu.DB_Project.announcement.dto.AnnouncementProcessRequest;
 import com.ssu.DB_Project.announcement.dto.ProcessedAnnouncement;
 import com.ssu.DB_Project.announcement.repository.AnnouncementCategoryRepository;
-import com.ssu.DB_Project.announcement.repository.AnnouncementDepartmentRepository;
 import com.ssu.DB_Project.announcement.repository.AnnouncementFileRepository;
 import com.ssu.DB_Project.announcement.repository.AnnouncementRepository;
 import com.ssu.DB_Project.chatbot.VectorIngestionService;
@@ -26,7 +24,6 @@ public class AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementCategoryRepository categoryRepository;
-    private final AnnouncementDepartmentRepository departmentRepository;
     private final ChatLanguageModel chatModel;
     private final VectorIngestionService vectorIngestionService;
     private final AnnouncementFileRepository announcementFileRepository;
@@ -45,7 +42,6 @@ public class AnnouncementService {
               "title": "...",
               "content": "...",
               "summary": "...",
-              //"source": "...",
               "status": "...",
               "postedAt": "YYYY-MM-DDTHH:MM:SS"
             }

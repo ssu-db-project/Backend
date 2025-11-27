@@ -6,11 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.ssu.DB_Project.chatbot.VectorIngestionService;
 import com.ssu.DB_Project.program.domain.Program;
 import com.ssu.DB_Project.program.domain.ProgramCategory;
-import com.ssu.DB_Project.program.domain.ProgramOrganization;
 import com.ssu.DB_Project.program.dto.ProcessedProgram;
 import com.ssu.DB_Project.program.dto.ProgramProcessRequest;
 import com.ssu.DB_Project.program.repository.ProgramCategoryRepository;
-import com.ssu.DB_Project.program.repository.ProgramOrganizationRepository;
 import com.ssu.DB_Project.program.repository.ProgramRepository;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatLanguageModel;
@@ -24,7 +22,6 @@ public class ProgramService {
 
     private final ProgramRepository programRepository;
     private final ProgramCategoryRepository categoryRepository;
-    private final ProgramOrganizationRepository organizationRepository;
     private final ChatLanguageModel chatModel;
     private final VectorIngestionService vectorIngestionService;
 
@@ -44,6 +41,7 @@ public class ProgramService {
               "subtitle": "...",
               "content": "...",
               "targetAudience": "...",
+              "organizationName": "...",
               "operationMethod": "...",
               "location": "...",
               "capacity": 0,
@@ -91,13 +89,14 @@ public class ProgramService {
 
 //        ProgramOrganization organization = organizationRepository.findByName(request.organizationName())
 //                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
+        String orgName = aiData.organizationName();
 
         Program program = Program.builder()
                 .id(generateProgramId())  // 크롤러에서 id를 줄 거면 그걸 쓰고, 아니면 별도 전략 사용
                 .title(aiData.title())
                 .subtitle(aiData.subtitle())
                 .category(category)
-                .organizationName(request.organizationName())
+                .organizationName(aiData.organizationName())
                 .operationMethod(aiData.operationMethod())
                 .applyStartAt(aiData.applyStartAt())
                 .applyEndAt(aiData.applyEndAt())
