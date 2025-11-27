@@ -26,7 +26,7 @@ public class VectorIngestionService {
             metadata.put("type", "announcement");
             metadata.put("announcement_id", a.getId());
             metadata.put("category_id", a.getCategory().getId());
-            metadata.put("department_id", a.getDepartment().getId());
+            //metadata.put("department_id", a.getDepartment().getId());
 
             Document doc = Document.from(
                     formatAnnouncement(a),
@@ -36,6 +36,8 @@ public class VectorIngestionService {
             embeddingStoreIngestor.ingest(doc);
 
         } catch (Exception e) {
+            e.printStackTrace(); // 스택 트레이스 출력
+            System.err.println("🔥 임베딩 상세 에러: " + e.getMessage());
             throw new RuntimeException("❌ 공지 임베딩 실패", e);
         }
     }
@@ -47,7 +49,7 @@ public class VectorIngestionService {
             metadata.put("type", "program");
             metadata.put("program_id", p.getId());
             metadata.put("program_category_id", p.getCategory().getId());
-            metadata.put("organization_id", p.getOrganization().getId());
+            //metadata.put("organization_id", p.getOrganization().getId());
 
             Document doc = Document.from(
                     formatProgram(p),
@@ -75,7 +77,7 @@ public class VectorIngestionService {
                 nullSafe(a.getSummary()),
                 nullSafe(a.getContent()),
                 a.getCategory().getName(),
-                a.getDepartment().getName(),
+                a.getDepartmentName(),
                 a.getPostedAt(),
                 nullSafe(a.getStatus())
         );

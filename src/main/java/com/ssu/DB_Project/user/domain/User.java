@@ -2,6 +2,7 @@ package com.ssu.DB_Project.user.domain;
 
 import com.ssu.DB_Project.announcement.domain.AnnouncementCategory;
 import com.ssu.DB_Project.common.BaseEntity;
+import com.ssu.DB_Project.program.domain.ProgramCategory;
 import com.ssu.DB_Project.university.domain.Department;
 import com.ssu.DB_Project.user.domain.enums.EnrollmentStatus;
 import com.ssu.DB_Project.user.domain.enums.Gender;
@@ -78,11 +79,17 @@ public class User extends BaseEntity{
     @Builder.Default
     private Set<UserInterestCategory> interestCategories = new HashSet<>();
 
-    // 관심 분야 (OneToMany - 중간 테이블 엔티티 사용)
+    // 관심 키워드 (OneToMany - 중간 테이블 엔티티 사용)
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private Set<UserInterestField> interestFields = new HashSet<>();
+
+    // 관심 비교과 카테고리
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @Builder.Default
+    private Set<UserInterestProgramCategory> interestProgramCategories = new HashSet<>();
 
     // 편의 메서드: 관심 카테고리 추가
     public void addInterestCategory(AnnouncementCategory category) {
@@ -112,5 +119,19 @@ public class User extends BaseEntity{
     public void removeInterestField(InterestField field) {
         this.interestFields.removeIf(uif ->
             uif.getField().equals(field));
+    }
+    // 편의 메서드: 관심 카테고리 추가
+    public void addInterestProgramCategory(ProgramCategory category) {
+        UserInterestProgramCategory userInterestProgramCategory = UserInterestProgramCategory.builder()
+            .user(this)
+            .category(category)
+            .build();
+        this.interestProgramCategories.add(userInterestProgramCategory);
+    }
+
+    // 편의 메서드: 관심 카테고리 제거
+    public void removeInterestProgramCategory(ProgramCategory category) {
+        this.interestProgramCategories.removeIf(uic ->
+            uic.getCategory().equals(category));
     }
 }

@@ -37,7 +37,7 @@ public class Announcement extends BaseEntity {
     @Column(length = 20)
     private Long id;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50)
     private String source;
 
 
@@ -49,7 +49,7 @@ public class Announcement extends BaseEntity {
     @JoinColumn(name = "department_id")
     private AnnouncementDepartment department;
 
-    @Column(length = 100)
+    @Column(length = 100,name = "department_name")
     private String departmentName;
 
     @Column(nullable = false)
