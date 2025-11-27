@@ -41,7 +41,6 @@ public class ProgramService {
               "subtitle": "...",
               "content": "...",
               "targetAudience": "...",
-              "organizationName": "...",
               "operationMethod": "...",
               "location": "...",
               "capacity": 0,
@@ -67,6 +66,12 @@ public class ProgramService {
                 Output:\s
                 "applyStartAt": "2025-09-01T00:00:00",
                 "applyEndAt": "2025-12-01T23:59:00"
+            
+            주의:
+            - JSON에는 categoryName 또는 organizationName을 절대 포함하지 마세요.
+            - categoryName과 organizationName은 LLM이 생성하지 않습니다.
+            - 아래 구조에 포함된 필드만 출력하세요.
+                
             """;
 
         String prompt = systemPrompt + "\n\n프로그램 원문:\n" + request.originalText();
@@ -84,19 +89,19 @@ public class ProgramService {
             throw new RuntimeException("❌ Program LLM JSON 파싱 실패: " + e.getMessage() + "\n응답: " + rawResponse);
         }
 
-        ProgramCategory category = categoryRepository.findByName(request.category())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 카테고리: " + request.category()));
+        ProgramCategory category = categoryRepository.findByName(request.categoryName())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 카테고리: " + request.categoryName()));
 
 //        ProgramOrganization organization = organizationRepository.findByName(request.organizationName())
-//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
-        String orgName = aiData.organizationName();
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()))
+        String organizationName = request.organizationName();
 
         Program program = Program.builder()
                 .id(generateProgramId())  // 크롤러에서 id를 줄 거면 그걸 쓰고, 아니면 별도 전략 사용
                 .title(aiData.title())
                 .subtitle(aiData.subtitle())
                 .category(category)
-                .organizationName(aiData.organizationName())
+                .organizationName(organizationName)
                 .operationMethod(aiData.operationMethod())
                 .applyStartAt(aiData.applyStartAt())
                 .applyEndAt(aiData.applyEndAt())
