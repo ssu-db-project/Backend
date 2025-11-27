@@ -31,5 +31,3 @@ VALUES (1, '숭실대학교');
 INSERT INTO department (id, name, college_id)
 VALUES ('D001', '소프트웨어학부', 1);
 
-INSERT INTO program_organization (id, name)
-VALUES ('org_1', '소프트웨어학부');

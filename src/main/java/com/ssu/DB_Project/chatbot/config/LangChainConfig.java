@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
 @Configuration
 public class LangChainConfig {
 
@@ -42,12 +43,11 @@ public class LangChainConfig {
 
     @Bean
     public EmbeddingStore<TextSegment> embeddingStore() {
-        // ❗ 반드시 builder() 방식 사용해야 함
-        return ChromaEmbeddingStore.builder()
-                .baseUrl(chromaBaseUrl)          // http://localhost:8000
-                .collectionName(chromaCollection) // policy_embeddings
-                .timeout(Duration.ofSeconds(30))
-                .build();
+            return ChromaEmbeddingStore.builder()
+                    .baseUrl(chromaBaseUrl)          // http://localhost:8000
+                    .collectionName(chromaCollection) // univ_embeddings
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
     }
 
     @Bean

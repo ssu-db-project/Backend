@@ -43,6 +43,7 @@ public class ProgramService {
               "title": "...",
               "subtitle": "...",
               "content": "...",
+              "organizationName": "...",
               "targetAudience": "...",
               "operationMethod": "...",
               "location": "...",
@@ -77,15 +78,16 @@ public class ProgramService {
         ProgramCategory category = categoryRepository.findByName(request.categoryName())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 카테고리: " + request.categoryName()));
 
-        ProgramOrganization organization = organizationRepository.findByName(request.organizationName())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
+//        ProgramOrganization organization = organizationRepository.findByName(request.organizationName())
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
+        String orgName = aiData.organizationName();
 
         Program program = Program.builder()
                 .id(generateProgramId())  // 크롤러에서 id를 줄 거면 그걸 쓰고, 아니면 별도 전략 사용
                 .title(aiData.title())
                 .subtitle(aiData.subtitle())
                 .category(category)
-                .organization(organization)
+                .organizationName(aiData.organizationName())
                 .operationMethod(aiData.operationMethod())
                 .applyStartAt(aiData.applyStartAt())
                 .applyEndAt(aiData.applyEndAt())

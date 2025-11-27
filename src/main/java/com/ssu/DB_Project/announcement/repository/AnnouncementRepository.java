@@ -7,5 +7,6 @@ import java.util.List;
 public interface AnnouncementRepository extends JpaRepository<Announcement, String> {
     List<Announcement> findTop10ByCategoryIdInOrderByPostedAtDesc(List<String> categoryIds);
 
-    List<Announcement> findTop10ByDepartmentIdInOrderByPostedAtDesc(List<String> departmentIds);
+    List<Announcement> findTop10ByDepartmentNameOrderByPostedAtDesc(String departmentName);
+
 }

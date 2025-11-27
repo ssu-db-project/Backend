@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import com.ssu.DB_Project.announcement.domain.AnnouncementDepartment;
 
 @Entity
 @Table(name = "announcement",
@@ -35,8 +36,8 @@ public class Announcement extends BaseEntity {
     @Column(length = 20)
     private String id;
 
-    @Column(length = 50, nullable = false)
-    private String source;
+//    @Column(length = 50, nullable = false)
+//    private String source;
 
     @Column(name = "original_id", length = 100, nullable = false)
     private String originalId;
@@ -45,9 +46,12 @@ public class Announcement extends BaseEntity {
     @JoinColumn(name = "category_id")
     private AnnouncementCategory category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
-    private AnnouncementDepartment department;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "department_id")
+//    private AnnouncementDepartment department;
+    @Column(name = "department_name", length = 100)
+    private String departmentName;
+
 
     @Column(nullable = false)
     private String title;

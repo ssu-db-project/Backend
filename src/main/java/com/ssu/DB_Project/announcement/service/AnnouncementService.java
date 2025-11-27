@@ -24,7 +24,7 @@ public class AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementCategoryRepository categoryRepository;
-    private final AnnouncementDepartmentRepository departmentRepository;
+//    private final AnnouncementDepartmentRepository departmentRepository;
     private final ChatLanguageModel chatModel;
     private final VectorIngestionService vectorIngestionService;
 
@@ -43,7 +43,6 @@ public class AnnouncementService {
               "title": "...",
               "content": "...",
               "summary": "...",
-              "source": "...",
               "originalId": "...",
               "status": "...",
               "postedAt": "YYYY-MM-DDTHH:MM:SS"
@@ -75,16 +74,17 @@ public class AnnouncementService {
                 .findByName(request.categoryName())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 카테고리: " + request.categoryName()));
 
-        AnnouncementDepartment department = departmentRepository
-                .findByName(request.departmentName())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 부서: " + request.departmentName()));
+//        AnnouncementDepartment department = departmentRepository
+//                .findByName(request.departmentName())
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 부서: " + request.departmentName()));
 
         Announcement announcement = Announcement.builder()
                 .id(aiData.originalId()) // originalId를 PK로 사용할 경우
-                .source(aiData.source())
+//                .source(aiData.source())
                 .originalId(aiData.originalId())
                 .category(category)
-                .department(department)
+//                .department(department)
+                .departmentName(request.departmentName())
                 .title(aiData.title())
                 .content(aiData.content())
                 .summary(aiData.summary())
