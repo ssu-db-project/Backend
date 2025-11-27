@@ -26,7 +26,7 @@ public class VectorIngestionService {
             metadata.put("type", "announcement");
             metadata.put("announcement_id", a.getId());
             metadata.put("category_id", a.getCategory().getId());
-            //metadata.put("department_id", a.getDepartment().getId());
+            metadata.put("department_name", a.getDepartmentName());
 
             Document doc = Document.from(
                     formatAnnouncement(a),
@@ -49,7 +49,7 @@ public class VectorIngestionService {
             metadata.put("type", "program");
             metadata.put("program_id", p.getId());
             metadata.put("program_category_id", p.getCategory().getId());
-            //metadata.put("organization_id", p.getOrganization().getId());
+            metadata.put("organization_name", p.getOrganizationName());
 
             Document doc = Document.from(
                     formatProgram(p),

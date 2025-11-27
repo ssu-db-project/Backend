@@ -8,10 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, String> {
-    List<Announcement> findTop10ByCategoryIdInOrderByPostedAtDesc(List<String> categoryIds);
-
-    List<Announcement> findTop10ByDepartmentIdInOrderByPostedAtDesc(List<String> departmentIds);
     List<Announcement> findByCategoryIdInOrderByPostedAtDesc(Set<String> categoryIds);
+    List<Announcement> findTop10ByDepartmentNameOrderByPostedAtDesc(String departmentName);
     List<Announcement> findByCategory_NameOrderByPostedAtDesc(String categoryName);
     boolean existsByUrl(String url);
 }

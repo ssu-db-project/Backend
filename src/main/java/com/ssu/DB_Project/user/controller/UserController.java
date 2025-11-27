@@ -6,6 +6,7 @@ import com.ssu.DB_Project.common.ApiResponse;
 import com.ssu.DB_Project.program.dto.ProgramDto;
 import com.ssu.DB_Project.user.domain.User;
 import com.ssu.DB_Project.user.dto.LoginRequest;
+import com.ssu.DB_Project.user.dto.LoginResponse;
 import com.ssu.DB_Project.user.dto.UserInterestResponse;
 import com.ssu.DB_Project.user.dto.UserInterestUpdateRequest;
 import com.ssu.DB_Project.user.dto.UserProfileResponse;
@@ -34,12 +35,13 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("회원가입이 완료되었습니다.",response));
     }
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest){
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest){
         User user = userService.login(request);
         HttpSession session = httpRequest.getSession();
         session.setAttribute("loginUser", user);
         session.setMaxInactiveInterval(3600);
-        return ResponseEntity.ok(ApiResponse.success("로그인이 완료되었습니다."));
+        LoginResponse response= LoginResponse.from(user);
+        return ResponseEntity.ok(ApiResponse.success("로그인이 완료되었습니다.",response));
     }
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest httpRequest) {

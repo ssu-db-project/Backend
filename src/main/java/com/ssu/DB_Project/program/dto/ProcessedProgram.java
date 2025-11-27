@@ -8,6 +8,7 @@ public record ProcessedProgram(
         String subtitle,
         String content,
         String targetAudience,
+        String organizationName,
         String operationMethod,
         String location,
         Integer capacity,
