@@ -25,6 +25,10 @@ public class AnnouncementService {
 
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementCategoryRepository categoryRepository;
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
+=======
+//    private final AnnouncementDepartmentRepository departmentRepository;
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
     private final ChatLanguageModel chatModel;
     private final VectorIngestionService vectorIngestionService;
     private final AnnouncementFileRepository announcementFileRepository;
@@ -43,6 +47,10 @@ public class AnnouncementService {
               "title": "...",
               "content": "...",
               "summary": "...",
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
+=======
+              "originalId": "...",
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
               "status": "...",
               "postedAt": "YYYY-MM-DDTHH:MM:SS"
             }
@@ -73,9 +81,22 @@ public class AnnouncementService {
                 .findByName(request.categoryName())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 카테고리: " + request.categoryName()));
 
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
         Announcement announcement = Announcement.builder()
                 //.source(aiData.source())
                 .category(category)
+=======
+//        AnnouncementDepartment department = departmentRepository
+//                .findByName(request.departmentName())
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지 부서: " + request.departmentName()));
+
+        Announcement announcement = Announcement.builder()
+                .id(aiData.originalId()) // originalId를 PK로 사용할 경우
+//                .source(aiData.source())
+                .originalId(aiData.originalId())
+                .category(category)
+//                .department(department)
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/announcement/service/AnnouncementService.java
                 .departmentName(request.departmentName())
                 .title(aiData.title())
                 .content(aiData.content())

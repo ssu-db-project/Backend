@@ -41,9 +41,15 @@ public class Program extends BaseEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "organization_id")
 //    private ProgramOrganization organization;
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/program/domain/Program.java
 
     @Column(name = "organization_name")
     private String organizationName;
+=======
+    @Column(name = "organization_name", length = 100)
+    private String organizationName;
+
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/program/domain/Program.java
 
     @Column(name = "operation_method", length = 50)
     private String operationMethod;

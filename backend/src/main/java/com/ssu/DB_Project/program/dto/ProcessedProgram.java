@@ -8,8 +8,12 @@ public record ProcessedProgram(
         String subtitle,
         String content,
         String targetAudience,
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/program/dto/ProcessedProgram.java
 //        String categoryName,
 //        String organizationName,
+=======
+        String organizationName,
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/program/dto/ProcessedProgram.java
         String operationMethod,
         String location,
         Integer capacity,

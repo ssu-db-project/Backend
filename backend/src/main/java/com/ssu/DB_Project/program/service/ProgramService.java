@@ -41,6 +41,7 @@ public class ProgramService {
               "title": "...",
               "subtitle": "...",
               "content": "...",
+              "organizationName": "...",
               "targetAudience": "...",
               "operationMethod": "...",
               "location": "...",
@@ -94,15 +95,24 @@ public class ProgramService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 카테고리: " + request.categoryName()));
 
 //        ProgramOrganization organization = organizationRepository.findByName(request.organizationName())
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/program/service/ProgramService.java
 //                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()))
         String organizationName = request.organizationName();
+=======
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램 기관: " + request.organizationName()));
+        String orgName = aiData.organizationName();
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/program/service/ProgramService.java
 
         Program program = Program.builder()
                 .id(generateProgramId())  // 크롤러에서 id를 줄 거면 그걸 쓰고, 아니면 별도 전략 사용
                 .title(aiData.title())
                 .subtitle(aiData.subtitle())
                 .category(category)
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/program/service/ProgramService.java
                 .organizationName(organizationName)
+=======
+                .organizationName(aiData.organizationName())
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/program/service/ProgramService.java
                 .operationMethod(aiData.operationMethod())
                 .applyStartAt(aiData.applyStartAt())
                 .applyEndAt(aiData.applyEndAt())

@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import com.ssu.DB_Project.announcement.domain.AnnouncementDepartment;
 
 @Entity
 @Table(name = "announcement")
@@ -37,7 +38,11 @@ public class Announcement extends BaseEntity {
     @Column(length = 20)
     private Long id;
 
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/announcement/domain/Announcement.java
 //    @Column(length = 50)
+=======
+//    @Column(length = 50, nullable = false)
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/announcement/domain/Announcement.java
 //    private String source;
 
 
@@ -48,9 +53,15 @@ public class Announcement extends BaseEntity {
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "department_id")
 //    private AnnouncementDepartment department;
+<<<<<<< HEAD:backend/src/main/java/com/ssu/DB_Project/announcement/domain/Announcement.java
 
     @Column(length = 100,name = "department_name")
     private String departmentName;
+=======
+    @Column(name = "department_name", length = 100)
+    private String departmentName;
+
+>>>>>>> ccb29fab (program_organization deleted):src/main/java/com/ssu/DB_Project/announcement/domain/Announcement.java
 
     @Column(nullable = false)
     private String title;
