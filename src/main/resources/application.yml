@@ -30,6 +30,7 @@ logging:
 
 # OpenAI API 설정
 openai:
+  api-key: ${OPENAI_API_KEY}
   model: "gpt-4o-mini"
   temperature: 0.7
 
@@ -44,3 +45,7 @@ management:
     web:
       exposure:
         include: health,info
+
+ssu:
+  id: ${SSU_ID}
+  pw: ${SSU_PW}
