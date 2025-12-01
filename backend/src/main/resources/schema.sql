@@ -246,3 +246,14 @@ CREATE TABLE user_interest_program_category (
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (category_id) REFERENCES program_category(id)
 );
+-- 북마크 테이블
+CREATE TABLE bookmark (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(20) NOT NULL,
+    announcement_id BIGINT,
+    program_id VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (announcement_id) REFERENCES announcement(id) ON DELETE CASCADE,
+    FOREIGN KEY (program_id) REFERENCES program(id) ON DELETE CASCADE
+);
