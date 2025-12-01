@@ -4,11 +4,14 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Send, Sparkles } from 'lucide-react';
 import { SupportInfo } from './SupportCard';
+import { askAnnouncementChatbot, askProgramChatbot } from '../lib/api/chatbot';
+import { toast } from 'sonner';
 
 interface AIAssistantDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedSupport: SupportInfo | null;
+  userId?: string | null;
 }
 
 interface Message {
@@ -16,28 +19,59 @@ interface Message {
   content: string;
 }
 
-export function AIAssistantDialog({ open, onOpenChange, selectedSupport }: AIAssistantDialogProps) {
+export function AIAssistantDialog({ open, onOpenChange, selectedSupport, userId }: AIAssistantDialogProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage = input;
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
-    // Mock AI response
-    setTimeout(() => {
-      const mockResponse = selectedSupport
+    try {
+      // 사용자 ID: prop에서 전달받음
+      const activeUserId = userId || 'anonymous';
+      let response;
+      
+      // API 호출 (실제 연결 시 여기서 백엔드 호출)
+      if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
+        // 프로그램/비교과 챗봇 API
+        response = await askProgramChatbot(activeUserId, userMessage);
+      } else {
+        // 공지사항 챗봇 API
+        response = await askAnnouncementChatbot(activeUserId, userMessage);
+      }
+      
+      // API 응답 처리
+      let aiMessage = '';
+      if (typeof response === 'string') {
+        aiMessage = response;
+      } else if (response.data) {
+        aiMessage = response.data;
+      } else if (response.message) {
+        aiMessage = response.message;
+      } else {
+        aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
+      }
+      
+      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
+    } catch (error) {
+      console.error('AI 챗봇 오류:', error);
+      
+      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+      const fallbackMessage = selectedSupport
         ? `"${selectedSupport.title}"에 대해 질문하셨네요. 이 지원 사업은 ${selectedSupport.eligibility}를 대상으로 하며, ${selectedSupport.amount}을 지원합니다. 구체적으로 어떤 부분이 궁금하신가요?`
         : '안녕하세요! 정부 지원 정책에 대해 궁금하신 점을 알려주시면 자세히 안내해드리겠습니다.';
       
-      setMessages(prev => [...prev, { role: 'assistant', content: mockResponse }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: fallbackMessage }]);
+      toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
