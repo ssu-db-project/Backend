@@ -7,6 +7,7 @@ import com.ssu.DB_Project.announcement.domain.Announcement;
 import com.ssu.DB_Project.announcement.domain.AnnouncementCategory;
 import com.ssu.DB_Project.announcement.domain.AnnouncementFile;
 import com.ssu.DB_Project.announcement.dto.AnnouncementProcessRequest;
+import com.ssu.DB_Project.announcement.dto.AnnouncementResponse;
 import com.ssu.DB_Project.announcement.dto.ProcessedAnnouncement;
 import com.ssu.DB_Project.announcement.repository.AnnouncementCategoryRepository;
 import com.ssu.DB_Project.announcement.repository.AnnouncementFileRepository;
@@ -103,6 +104,12 @@ public class AnnouncementService {
         vectorIngestionService.embedAnnouncement(saved);
 
         return saved;
+    }
+
+    public AnnouncementResponse getAnnouncement(Long announcementId) {
+        Announcement announcement = announcementRepository.findById(String.valueOf(announcementId))
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다"));
+        return AnnouncementResponse.from(announcement);
     }
 
 }
