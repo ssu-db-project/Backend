@@ -8,6 +8,7 @@ import com.ssu.DB_Project.program.domain.Program;
 import com.ssu.DB_Project.program.domain.ProgramCategory;
 import com.ssu.DB_Project.program.dto.ProcessedProgram;
 import com.ssu.DB_Project.program.dto.ProgramProcessRequest;
+import com.ssu.DB_Project.program.dto.ProgramResponse;
 import com.ssu.DB_Project.program.repository.ProgramCategoryRepository;
 import com.ssu.DB_Project.program.repository.ProgramRepository;
 import dev.langchain4j.data.message.UserMessage;
@@ -124,5 +125,11 @@ public class ProgramService {
     // TODO: 실제 ID 생성 전략 (원본 페이지의 ID 등)을 크롤러와 합의해서 결정
     private String generateProgramId() {
         return "prg_" + System.currentTimeMillis();
+    }
+
+    public ProgramResponse getProgram(String programId) {
+        Program program = programRepository.findById(programId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 프로그램입니다"));
+        return ProgramResponse.from(program);
     }
 }
