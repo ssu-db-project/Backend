@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { login, register, checkUsernameAvailability as apiCheckUsernameAvailability } from '../lib/api/auth';
 
 interface LoginDialogProps {
   open: boolean;
@@ -13,24 +14,47 @@ interface LoginDialogProps {
   onLoginSuccess: (username: string) => void;
 }
 
-// Mock database for storing registered users
-const registeredUsers = new Set<string>(['admin', 'test123']); // 기본 등록된 사용자
-
 export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps) {
   const [loginData, setLoginData] = useState({ username: '', password: '' });
   const [signupData, setSignupData] = useState({ username: '', password: '', confirmPassword: '' });
   const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [passwordMatchError, setPasswordMatchError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - 실제로는 API 호출
-    if (loginData.username && loginData.password) {
-      onLoginSuccess(loginData.username);
+    
+    if (!loginData.username || !loginData.password) {
+      toast.error('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
+      const response = await login({
+        username: loginData.username,
+        password: loginData.password,
+      });
+
+      if (response.isSuccess) {
+        toast.success('로그인이 완료되었습니다!');
+        const serverId = (response as any).data?.id || (response as any).data?.userId || loginData.username;
+        onLoginSuccess(serverId);
+        setLoginData({ username: '', password: '' });
+        onClose();
+      } else {
+        toast.error(response.message || '로그인 실패');
+      }
+    } catch (error) {
+      console.error('로그인 오류:', error);
+      toast.error('로그인 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // 아이디 중복 확인
@@ -51,27 +75,60 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
       toast.error('비밀번호는 최소 6자 이상이어야 합니다.');
       return;
     }
-    
-    // 회원가입 성공
-    registeredUsers.add(signupData.username);
-    toast.success('회원가입이 완료되었습니다!');
-    onLoginSuccess(signupData.username);
-    
-    // 폼 초기화
-    setSignupData({ username: '', password: '', confirmPassword: '' });
-    setUsernameCheckStatus('idle');
-    setPasswordMatchError(false);
+
+    setIsLoading(true);
+    try {
+      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
+      const response = await register({
+        username: signupData.username,
+        password: signupData.password,
+        confirmPassword: signupData.confirmPassword,
+      });
+
+      if (response.isSuccess) {
+        toast.success('회원가입이 완료되었습니다!');
+        const serverId = (response as any).data?.id || signupData.username;
+        onLoginSuccess(serverId);
+        setSignupData({ username: '', password: '', confirmPassword: '' });
+        setUsernameCheckStatus('idle');
+        setPasswordMatchError(false);
+        onClose();
+      } else {
+        toast.error(response.message || '회원가입 실패');
+      }
+    } catch (error) {
+      console.error('회원가입 오류:', error);
+      toast.error('회원가입 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const checkUsernameAvailability = (username: string) => {
+  const checkUsernameAvailability = async (username: string) => {
+    if (!username) {
+      setUsernameCheckStatus('idle');
+      return;
+    }
+
     setUsernameCheckStatus('checking');
-    setTimeout(() => {
-      if (registeredUsers.has(username)) {
-        setUsernameCheckStatus('taken');
-      } else {
-        setUsernameCheckStatus('available');
+    try {
+      if (username.length < 3) {
+        // 너무 짧으면 아직 검사하지 않음 — 'taken'으로 오해하지 않도록 idle로 유지
+        setUsernameCheckStatus('idle');
+        return;
       }
-    }, 500);
+
+      const resp = await apiCheckUsernameAvailability(username);
+      // resp.isSuccess === true means 'available' (mock implementation follows that contract)
+      if (resp && resp.isSuccess) {
+        setUsernameCheckStatus('available');
+      } else {
+        setUsernameCheckStatus('taken');
+      }
+    } catch (error) {
+      console.error('아이디 중복 확인 오류:', error);
+      setUsernameCheckStatus('idle');
+    }
   };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,8 +203,8 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                 />
               </div>
 
-              <Button type="submit" className="w-full">
-                로그인
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? '로그인 중...' : '로그인'}
               </Button>
             </form>
           </TabsContent>
@@ -211,8 +268,8 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                 )}
               </div>
 
-              <Button type="submit" className="w-full">
-                회원가입
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? '회원가입 중...' : '회원가입'}
               </Button>
             </form>
           </TabsContent>
