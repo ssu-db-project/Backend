@@ -3,6 +3,7 @@ package com.ssu.DB_Project.announcement.controller;
 import com.ssu.DB_Project.announcement.domain.Announcement;
 import com.ssu.DB_Project.announcement.dto.AnnouncementProcessRequest;
 import com.ssu.DB_Project.announcement.dto.AnnouncementChatRequest;
+import com.ssu.DB_Project.announcement.dto.AnnouncementResponse;
 import com.ssu.DB_Project.announcement.service.AnnouncementService;
 import com.ssu.DB_Project.announcement.service.AnnouncementChatService;
 import com.ssu.DB_Project.common.ApiResponse;
@@ -29,8 +30,11 @@ public class AnnouncementController {
         String answer = announcementChatService.ask(request.userId(), request.question());
         return ResponseEntity.ok(answer);
     }
-//    @GetMapping("")
-//    public ResponseEntity<ApiResponse<>>(){
-//
-//    }
+    // 공지사항 단건 조회
+    @GetMapping("/{announcementId}")
+    public ResponseEntity<ApiResponse<AnnouncementResponse>> getAnnouncement(
+        @PathVariable Long announcementId) {
+        AnnouncementResponse announcementResponse = announcementService.getAnnouncement(announcementId);
+        return ResponseEntity.ok(ApiResponse.success("공지사항 단건 조회가 완료되었습니다.",announcementResponse));
+    }
 }
