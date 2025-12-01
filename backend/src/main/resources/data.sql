@@ -43,7 +43,7 @@ INSERT INTO program_category (id, name) VALUES
 --('D999', '기타');
 
 INSERT INTO college (id, name)
-VALUES (1, '숭실대학교');
+VALUES (1, 'IT대학');
 
 INSERT INTO department (id, name, college_id)
 VALUES ('D001', '소프트웨어학부', 1);
