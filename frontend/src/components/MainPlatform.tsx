@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchBar } from './SearchBar';
 import { SupportCard, SupportInfo } from './SupportCard';
 import { AIAssistantSidebar } from './AIAssistantSidebar';
@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collap
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { getInterestAnnouncements, getInterestPrograms, searchPolicies } from '../lib/api/notices';
 
 const mockSupportData: SupportInfo[] = [
   {
@@ -240,6 +241,7 @@ export function MainPlatform({
   bookmarkedPolicies,
   onTogglePolicyBookmark
 }: MainPlatformProps) {
+  const [supports, setSupports] = useState<SupportInfo[]>(mockSupportData);
   const [searchQuery, setSearchQuery] = useState('');
   const [mainTab, setMainTab] = useState('interest-based'); // interest-based | all-db
   const [selectedCategory, setSelectedCategory] = useState('전체');
@@ -254,10 +256,100 @@ export function MainPlatform({
   const [eligibilityFilter, setEligibilityFilter] = useState('');
 
   const interestCategories = ['전체', ...userProfile.interests, '추천'];
+  // Load interest-based supports from API when userProfile changes
+  useEffect(() => {
+    async function loadInterestSupports() {
+      try {
+        const resp = await getInterestAnnouncements();
+        if (resp && (resp as any).data) {
+          const data = (resp as any).data as any[];
+          const mapped: SupportInfo[] = data.map((n: any) => ({
+            id: String(n.id || n.noticeId || n.notice_id || n.id),
+            title: n.title || n.subject || '',
+            summary: n.summary || n.description || '',
+            description: n.description || n.fullText || '',
+            fullText: n.fullText || n.description || '',
+            sourceUrl: n.link || n.sourceUrl || '',
+            category: n.category || '기타',
+            eligibility: n.eligibility || '-',
+            amount: n.amount || '-',
+            deadline: n.deadline || n.date || '',
+            agency: n.agency || '',
+            tags: n.tags || [],
+          }));
+          setSupports(mapped.length ? mapped : mockSupportData);
+        }
+      } catch (error) {
+        console.error('관심 공지사항 로드 오류:', error);
+        setSupports(mockSupportData);
+      }
+    }
+
+    if (userProfile) loadInterestSupports();
+  }, [userProfile]);
+
+  // Keyword search: when user types a query, call search API (length >= 2)
+  useEffect(() => {
+    let mounted = true;
+    async function doSearch() {
+      if (!searchQuery || searchQuery.trim().length < 2) {
+        // restore interest-based supports when query cleared
+        if (userProfile) {
+          try {
+            const resp = await getInterestAnnouncements();
+            const data = (resp as any).data || [];
+            const mapped: SupportInfo[] = data.map((n: any) => ({
+              id: String(n.id || n.noticeId || n.notice_id || n.id),
+              title: n.title || n.subject || '',
+              summary: n.summary || n.description || '',
+              description: n.description || n.fullText || '',
+              fullText: n.fullText || n.description || '',
+              sourceUrl: n.link || n.sourceUrl || '',
+              category: n.category || '기타',
+              eligibility: n.eligibility || '-',
+              amount: n.amount || '-',
+              deadline: n.deadline || n.date || '',
+              agency: n.agency || '',
+              tags: n.tags || [],
+            }));
+            if (mounted) setSupports(mapped.length ? mapped : mockSupportData);
+          } catch (_) {
+            if (mounted) setSupports(mockSupportData);
+          }
+        }
+        return;
+      }
+
+      try {
+        const resp = await searchPolicies(searchQuery.trim());
+        const data = (resp as any).data || [];
+        const mapped: SupportInfo[] = data.map((n: any) => ({
+          id: String(n.id || n.noticeId || n.notice_id || n.id),
+          title: n.title || n.subject || '',
+          summary: n.summary || n.description || '',
+          description: n.description || n.fullText || '',
+          fullText: n.fullText || n.description || '',
+          sourceUrl: n.link || n.sourceUrl || '',
+          category: n.category || '기타',
+          eligibility: n.eligibility || '-',
+          amount: n.amount || '-',
+          deadline: n.deadline || n.date || '',
+          agency: n.agency || '',
+          tags: n.tags || [],
+        }));
+        if (mounted) setSupports(mapped.length ? mapped : mockSupportData);
+      } catch (error) {
+        console.error('정책 검색 오류:', error);
+      }
+    }
+
+    doSearch();
+    return () => { mounted = false; };
+  }, [searchQuery, userProfile]);
 
   // Filter logic for interest-based tab
   const getInterestBasedSupports = () => {
-    return mockSupportData.filter((support) => {
+    return supports.filter((support) => {
       const matchesSearch =
         searchQuery === '' ||
         support.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -279,7 +371,7 @@ export function MainPlatform({
 
   // Filter logic for all-db tab
   const getAllDbSupports = () => {
-    return mockSupportData.filter((support) => {
+    return supports.filter((support) => {
       const matchesSearch =
         searchQuery === '' ||
         support.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -317,7 +409,7 @@ export function MainPlatform({
         userProfile={userProfile}
         onUpdateProfile={onUpdateProfile}
         bookmarkedPolicies={bookmarkedPolicies}
-        allPolicies={mockSupportData}
+        allPolicies={supports}
         onTogglePolicyBookmark={onTogglePolicyBookmark}
       />
     );
