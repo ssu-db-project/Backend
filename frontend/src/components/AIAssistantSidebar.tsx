@@ -3,12 +3,15 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Send, Sparkles, X, ChevronLeft } from 'lucide-react';
 import { SupportInfo } from './SupportCard';
+import { askAnnouncementChatbot, askProgramChatbot } from '../lib/api/chatbot';
+import { toast } from 'sonner';
 
 interface AIAssistantSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   selectedSupport: SupportInfo | null;
   assistantType: 'supathon' | 'general'; // 비교과(슈패스) 전용 or 전체 공지사항 전용
+  userId?: string | null;
 }
 
 interface Message {
@@ -16,7 +19,7 @@ interface Message {
   content: string;
 }
 
-export function AIAssistantSidebar({ isOpen, onClose, selectedSupport, assistantType }: AIAssistantSidebarProps) {
+export function AIAssistantSidebar({ isOpen, onClose, selectedSupport, assistantType, userId }: AIAssistantSidebarProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -93,28 +96,48 @@ export function AIAssistantSidebar({ isOpen, onClose, selectedSupport, assistant
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
-    // Mock AI response - RAG 기반 응답 시뮬레이션
-    setTimeout(() => {
-      let mockResponse = '';
+    try {
+      // 사용자 ID: prop에서 전달받음 (로그인된 사용자 식별자)
+      const activeUserId = userId || 'anonymous';
       
-      if (selectedSupport) {
-        mockResponse = `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`;
+      let response;
+      
+      // API 호출 (실제 연결 시 여기서 백엔드 호출)
+      if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
+        // 프로그램/비교과 챗봇 API
+        response = await askProgramChatbot(activeUserId, userMessage);
       } else {
-        // 사용자 입력 기반 맞춤형 응답
-        const lowerInput = userMessage.toLowerCase();
-        
-        if (lowerInput.includes('청년') || lowerInput.includes('창업')) {
-          mockResponse = '청년 창업 관련 지원 정책을 찾고 계시는군요!\n\n현재 다음과 같은 지원 사업이 있습니다:\n\n1. 청년 창업 지원금 (중소벤처기업부)\n   - 만 19세~39세 대상\n   - 최대 5,000만원 무상 지원\n   - 마감: 2025년 11월 30일\n\n더 자세한 정보가 필요하시거나 다른 조건이 있으신가요?';
-        } else if (lowerInput.includes('주거') || lowerInput.includes('월세')) {
-          mockResponse = '주거 지원 정책에 관심이 있으시군요.\n\n저소득층 주거 지원 사업을 추천드립니다:\n- 기준 중위소득 50% 이하 무주택 가구 대상\n- 월 최대 40만원 (12개월)\n- 국토교통부 주관\n- 상시 접수\n\n본인의 소득 구간을 확인하시면 신청 가능 여부를 알 수 있습니다.';
-        } else {
-          mockResponse = '안녕하세요! AI 지원 도우미입니다.\n\n정부 지원 정책 데이터베이스를 검색하여 가장 적합한 정보를 찾아드립니다.\n\n다음 정보를 알려주시면 더 정확한 추천이 가능합니다:\n- 나이 또는 연령대\n- 직업 또는 상황 (학생, 창업자, 소상공인 등)\n- 관심 분야 (주거, 창업, 교육 등)\n\n무엇을 도와드릴까요?';
-        }
+        // 공지사항 챗봇 API
+        response = await askAnnouncementChatbot(activeUserId, userMessage);
+      }
+      
+      // API 응답 처리
+      let aiMessage = '';
+      if (typeof response === 'string') {
+        aiMessage = response;
+      } else if (response.data) {
+        aiMessage = response.data;
+      } else if (response.message) {
+        aiMessage = response.message;
+      } else {
+        aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
       }
       
       // 타이핑 효과로 메시지 출력
-      typeMessage(mockResponse);
-    }, 800);
+      typeMessage(aiMessage);
+    } catch (error) {
+      console.error('AI 챗봇 오류:', error);
+      
+      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+      const fallbackResponse = selectedSupport
+        ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
+        : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
+      
+      typeMessage(fallbackResponse);
+      toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

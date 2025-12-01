@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -7,8 +7,9 @@ import { ScrollArea } from './ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
 import { UserProfile } from './UserProfileDialog';
 import { SupportCard, SupportInfo } from './SupportCard';
-import { ArrowLeft, Save, User, Bookmark } from 'lucide-react';
+import { ArrowLeft, Save, User, Bookmark, Loader2 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { getInterestAnnouncements } from '../lib/api/notices';
 
 interface MyPageProps {
   onBack: () => void;
@@ -80,6 +81,44 @@ export function MyPage({
     userProfile.location.split(' ')[1] || ''
   );
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [loadedPolicies, setLoadedPolicies] = useState<SupportInfo[]>(allPolicies || []);
+  const [isLoadingPolicies, setIsLoadingPolicies] = useState(allPolicies.length === 0);
+  
+  // 마이페이지 진입 시 공지사항 로드 (allPolicies가 비어있을 때)
+  useEffect(() => {
+    if (allPolicies.length === 0) {
+      setIsLoadingPolicies(true);
+      getInterestAnnouncements()
+        .then((resp) => {
+          const data = (resp as any).data || [];
+          const mapped: SupportInfo[] = data.map((n: any) => ({
+            id: String(n.id || n.noticeId || n.notice_id),
+            title: n.title || n.subject || '',
+            summary: n.summary || n.description || '',
+            description: n.description || n.fullText || '',
+            fullText: n.fullText || n.description || '',
+            sourceUrl: n.link || n.sourceUrl || '',
+            category: n.category || '기타',
+            eligibility: n.eligibility || '-',
+            amount: n.amount || '-',
+            deadline: n.deadline || n.date || '',
+            agency: n.agency || '',
+            tags: n.tags || [],
+          }));
+          setLoadedPolicies(mapped);
+        })
+        .catch((err) => {
+          console.error('공지사항 로드 오류:', err);
+          setLoadedPolicies([]);
+        })
+        .finally(() => {
+          setIsLoadingPolicies(false);
+        });
+    } else {
+      setLoadedPolicies(allPolicies);
+      setIsLoadingPolicies(false);
+    }
+  }, [allPolicies]);
   
   // Refs for scrolling to error fields
   const genderRef = useRef<HTMLDivElement>(null);
@@ -157,10 +196,6 @@ export function MyPage({
     onUpdateProfile(profile);
     toast.success('프로필이 업데이트되었습니다');
   };
-
-  const bookmarkedPolicyList = allPolicies.filter((policy) =>
-    bookmarkedPolicies.has(policy.id)
-  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -407,7 +442,7 @@ export function MyPage({
                           </SelectTrigger>
                           <SelectContent>
                             {selectedProvince &&
-                              provinces[selectedProvince as keyof typeof provinces].map((city) => (
+                              provinces[selectedProvince as keyof typeof provinces]?.map((city) => (
                                 <SelectItem key={city} value={city}>
                                   {city}
                                 </SelectItem>
@@ -463,21 +498,33 @@ export function MyPage({
                     <h3 className="text-blue-600 pb-2 border-b mb-4">
                       북마크한 공지사항 ({bookmarkedPolicies.size})
                     </h3>
-                    {bookmarkedPolicyList.length > 0 ? (
+                    {isLoadingPolicies ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-gray-400" />
+                        <p>공지사항을 로드 중입니다...</p>
+                      </div>
+                    ) : loadedPolicies && loadedPolicies.length > 0 ? (
                       <div className="space-y-4">
-                        {bookmarkedPolicyList.map((policy) => (
-                          <SupportCard
-                            key={policy.id}
-                            support={policy}
-                            onAIClick={() => {}}
-                            isBookmarked={true}
-                            onToggleBookmark={onTogglePolicyBookmark}
-                          />
-                        ))}
+                        {loadedPolicies
+                          .filter((policy) => bookmarkedPolicies.has(policy.id))
+                          .map((policy) => (
+                            <SupportCard
+                              key={policy.id}
+                              support={policy}
+                              onAIClick={() => {}}
+                              isBookmarked={true}
+                              onToggleBookmark={onTogglePolicyBookmark}
+                            />
+                          ))}
+                        {loadedPolicies.filter((policy) => bookmarkedPolicies.has(policy.id)).length === 0 && (
+                          <div className="text-center py-12 text-gray-500">
+                            <p>북마크한 공지사항이 없습니다</p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-12 text-gray-500">
-                        북마크한 공지사항이 없습니다
+                        <p>공지사항이 없습니다</p>
                       </div>
                     )}
                   </div>
