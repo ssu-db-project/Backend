@@ -1,14 +1,36 @@
 package com.ssu.DB_Project.search.dto;
 
+import com.ssu.DB_Project.announcement.domain.Announcement;
+import com.ssu.DB_Project.program.domain.Program;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Builder
 public class SearchResultDto {
-    private String id;            // announcement_id 또는 program_id
-    private String title;         // 제목
-    private String type;          // "announcement" / "program"
-    private String sourceContent; // 🔥 검색 근거가 된 내용 (LLM 이유 설명용)
-    private double similarity;    // 매칭 점수
+    private String id;
+    private String title;
+    private String type;
+    private String sourceContent;
+    private double similarity;
+
+    public static SearchResultDto fromAnnouncement(Announcement a, double score) {
+        return SearchResultDto.builder()
+                .id(String.valueOf(a.getId()))
+                .title(a.getTitle())
+                .type("announcement")
+                .sourceContent(a.getContent())
+                .similarity(score)
+                .build();
+    }
+
+    public static SearchResultDto fromProgram(Program p, double score) {
+        return SearchResultDto.builder()
+                .id(String.valueOf(p.getId()))
+                .title(p.getTitle())
+                .type("program")
+                .sourceContent(p.getContent())
+                .similarity(score)
+                .build();
+    }
 }
