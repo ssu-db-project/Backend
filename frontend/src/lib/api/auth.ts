@@ -80,7 +80,7 @@ export interface UpdateInterestsRequest {
  * @returns 회원가입 결과
  * 
  * 응답 상태 코드:
- * - 201 Created: 회원가입 성공
+ * - 200 OK: 회원가입 성공
  * - 400 Bad Request: 필수 값 누락
  */
 export async function register(request: RegisterRequest): Promise<AuthResponse> {
@@ -94,8 +94,8 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
       body: JSON.stringify(request),
     });
 
-    // 201 Created - 회원가입 성공
-    if (response.status === 201) {
+    // 200 OK - 회원가입 성공
+    if (response.ok) {
       return await response.json();
     }
 
@@ -124,7 +124,7 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
  * @returns 로그인 결과 및 사용자 정보
  * 
  * 응답 상태 코드:
- * - 201 Created: 로그인 성공
+ * - 200 OK: 로그인 성공
  * - 401 Unauthorized: 로그인 실패 (아이디 또는 비밀번호 오류)
  */
 export async function login(request: LoginRequest): Promise<AuthResponse> {
@@ -138,8 +138,8 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
       body: JSON.stringify(request),
     });
 
-    // 201 Created - 로그인 성공
-    if (response.status === 201) {
+    // 200 OK - 로그인 성공
+    if (response.ok) {
       return await response.json();
     }
 
@@ -244,7 +244,7 @@ export async function updateUserProfile(profile: UpdateProfileRequest): Promise<
     });
 
     // 200 OK - 수정 성공
-    if (response.status === 200) {
+    if (response.ok) {
       return await response.json();
     }
 
@@ -298,7 +298,7 @@ export async function getUserInterests(): Promise<AuthResponse> {
     });
 
     // 200 OK - 정상 조회
-    if (response.status === 200) {
+    if (response.ok) {
       return await response.json();
     }
 
@@ -354,7 +354,7 @@ export async function updateUserInterests(interests: UpdateInterestsRequest): Pr
     });
 
     // 200 OK - 수정 성공
-    if (response.status === 200) {
+    if (response.ok) {
       return await response.json();
     }
 
@@ -384,11 +384,19 @@ export async function updateUserInterests(interests: UpdateInterestsRequest): Pr
 }
 
 /**
- * 아이디 중복 확인 (mock 환경에서는 mock API에 위임)
+ * 아이디 중복 확인
+ * 
+ * GET /api/user/check-duplicate/{id}
+ * 
+ * ⚠️ TODO: 백엔드에 GET /api/user/check-duplicate/{id} 엔드포인트 연결 필요
+ * 
+ * Response:
+ * - isSuccess: true (사용 가능)
+ * - isSuccess: false (이미 사용 중)
  */
 export async function checkUsernameAvailability(username: string): Promise<AuthResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/user/check-username?username=${encodeURIComponent(username)}`, {
+    const response = await fetch(`${API_BASE_URL}/user/check-duplicate/${encodeURIComponent(username)}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -397,9 +405,17 @@ export async function checkUsernameAvailability(username: string): Promise<AuthR
       throw new Error(`아이디 확인 실패: ${response.statusText}`);
     }
 
-    return await response.json();
+    const result: ApiResponse<boolean> = await response.json();
+    
+    // 백엔드 응답: { success: true, message: "ID 중복 확인", data: true/false }
+    // data가 true면 중복(사용 불가), false면 사용 가능
+    return {
+      isSuccess: !result.data, // data가 false일 때 사용 가능(isSuccess: true)
+      message: result.data ? '이미 사용 중인 아이디입니다.' : '사용 가능한 아이디입니다.'
+    };
   } catch (error) {
     console.error('아이디 중복 확인 오류:', error);
-    return { isSuccess: false, message: '아이디 확인 중 오류가 발생했습니다.' };
+    // 에러 발생 시 예외를 던져서 catch 블록에서 처리하도록 함
+    throw error;
   }
 }

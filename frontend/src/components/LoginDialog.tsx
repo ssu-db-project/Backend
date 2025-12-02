@@ -4,6 +4,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { ScrollArea } from './ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { login, register, checkUsernameAvailability as apiCheckUsernameAvailability } from '../lib/api/auth';
@@ -32,9 +34,98 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
     interestFieldName: [] as string[],
     interestProgramCategoryName: [] as string[],
   });
-  const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // 관심 분야 선택 상태 (통합: 최대 3개)
+  const [selectedInterests, setSelectedInterests] = useState<Array<{type: 'announcement' | 'field' | 'program', value: string}>>([]);
+
+  // 관심 분야 옵션 (백엔드 data.sql 기준)
+  const interestOptions = [
+    // 공지 카테고리
+    { type: 'announcement' as const, label: '학사', value: '학사' },
+    { type: 'announcement' as const, label: '장학', value: '장학' },
+    { type: 'announcement' as const, label: '국제교류', value: '국제교류' },
+    { type: 'announcement' as const, label: '외국인유학생', value: '외국인유학생' },
+    { type: 'announcement' as const, label: '채용', value: '채용' },
+    { type: 'announcement' as const, label: '봉사', value: '봉사' },
+    { type: 'announcement' as const, label: '기타 공지', value: '기타' },
+    // 키워드
+    { type: 'field' as const, label: '데이터', value: '데이터' },
+    { type: 'field' as const, label: '반도체', value: '반도체' },
+    { type: 'field' as const, label: '통신', value: '통신' },
+    { type: 'field' as const, label: '방산', value: '방산' },
+    { type: 'field' as const, label: '자동차', value: '자동차' },
+    // 비교과 프로그램
+    { type: 'program' as const, label: '상담/멘토링/코칭', value: '상담/멘토링/코칭' },
+    { type: 'program' as const, label: '공모전/경진대회', value: '공모전/경진대회' },
+    { type: 'program' as const, label: '특강/워크숍', value: '특강/워크숍' },
+    { type: 'program' as const, label: '소모임/동아리', value: '소모임/동아리' },
+    { type: 'program' as const, label: '국내/외 현장실습, 인턴십', value: '국내/외 현장실습, 인턴십' },
+    { type: 'program' as const, label: '공연, 전시회/견학, 답사', value: '공연, 전시회/견학, 답사' },
+    { type: 'program' as const, label: '자격증/어학시험', value: '자격증/어학시험' },
+    { type: 'program' as const, label: '서포터즈/홍보대사', value: '서포터즈/홍보대사' },
+    { type: 'program' as const, label: '국내/외 봉사활동', value: '국내/외 봉사활동' },
+    { type: 'program' as const, label: '발표(졸업/논문)', value: '발표(졸업/논문)' },
+    { type: 'program' as const, label: '국내/외 교환학생 및 연수', value: '국내/외 교환학생 및 연수' },
+    { type: 'program' as const, label: '전공탐색프로그램', value: '전공탐색프로그램' },
+    { type: 'program' as const, label: '진로탐색프로그램', value: '진로탐색프로그램' },
+    { type: 'program' as const, label: '채용설명회/채용상담', value: '채용설명회/채용상담' },
+    { type: 'program' as const, label: '공공인재양성반', value: '공공인재양성반' },
+    { type: 'program' as const, label: '독서및토론', value: '독서및토론' },
+    { type: 'program' as const, label: '창업', value: '창업' },
+    { type: 'program' as const, label: 'AI 비교과', value: 'AI 비교과' },
+    { type: 'program' as const, label: '졸업생 특화 프로그램', value: '졸업생 특화 프로그램' },
+    { type: 'program' as const, label: '기타 프로그램', value: '기타' },
+  ];
+
+  // 시/도별 시/군/구 데이터
+  const districtsByCity: { [key: string]: string[] } = {
+    '서울특별시': ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'],
+    '부산광역시': ['강서구', '금정구', '기장군', '남구', '동구', '동래구', '부산진구', '북구', '사상구', '사하구', '서구', '수영구', '연제구', '영도구', '중구', '해운대구'],
+    '대구광역시': ['남구', '달서구', '달성군', '동구', '북구', '서구', '수성구', '중구'],
+    '인천광역시': ['강화군', '계양구', '남동구', '동구', '미추홀구', '부평구', '서구', '연수구', '옹진군', '중구'],
+    '광주광역시': ['광산구', '남구', '동구', '북구', '서구'],
+    '대전광역시': ['대덕구', '동구', '서구', '유성구', '중구'],
+    '울산광역시': ['남구', '동구', '북구', '울주군', '중구'],
+    '세종특별자치시': ['세종시'],
+    '경기도': ['가평군', '고양시', '과천시', '광명시', '광주시', '구리시', '군포시', '김포시', '남양주시', '동두천시', '부천시', '성남시', '수원시', '시흥시', '안산시', '안성시', '안양시', '양주시', '양평군', '여주시', '연천군', '오산시', '용인시', '의왕시', '의정부시', '이천시', '파주시', '평택시', '포천시', '하남시', '화성시'],
+    '강원특별자치도': ['강릉시', '고성군', '동해시', '삼척시', '속초시', '양구군', '양양군', '영월군', '원주시', '인제군', '정선군', '철원군', '춘천시', '태백시', '평창군', '홍천군', '화천군', '횡성군'],
+    '충청북도': ['괴산군', '단양군', '보은군', '영동군', '옥천군', '음성군', '제천시', '증평군', '진천군', '청주시', '충주시'],
+    '충청남도': ['계룡시', '공주시', '금산군', '논산시', '당진시', '보령시', '부여군', '서산시', '서천군', '아산시', '예산군', '천안시', '청양군', '태안군', '홍성군'],
+    '전북특별자치도': ['고창군', '군산시', '김제시', '남원시', '무주군', '부안군', '순창군', '완주군', '익산시', '임실군', '장수군', '전주시', '정읍시', '진안군'],
+    '전라남도': ['강진군', '고흥군', '곡성군', '광양시', '구례군', '나주시', '담양군', '목포시', '무안군', '보성군', '순천시', '신안군', '여수시', '영광군', '영암군', '완도군', '장성군', '장흥군', '진도군', '함평군', '해남군', '화순군'],
+    '경상북도': ['경산시', '경주시', '고령군', '구미시', '군위군', '김천시', '문경시', '봉화군', '상주시', '성주군', '안동시', '영덕군', '영양군', '영주시', '영천시', '예천군', '울릉군', '울진군', '의성군', '청도군', '청송군', '칠곡군', '포항시'],
+    '경상남도': ['거제시', '거창군', '고성군', '김해시', '남해군', '밀양시', '사천시', '산청군', '양산시', '의령군', '진주시', '창녕군', '창원시', '통영시', '하동군', '함안군', '함양군', '합천군'],
+    '제주특별자치도': ['서귀포시', '제주시']
+  };
+
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+    setSelectedDistrict('');
+    setSignupData({ ...signupData, residence: '' });
+  };
+
+  const handleDistrictChange = (district: string) => {
+    setSelectedDistrict(district);
+    setSignupData({ ...signupData, residence: `${selectedCity} ${district}` });
+  };
+
+  // 관심 분야 토글 함수 (통합: 전체 최대 3개)
+  const handleInterestToggle = (type: 'announcement' | 'field' | 'program', value: string) => {
+    const isSelected = selectedInterests.some(item => item.type === type && item.value === value);
+    
+    if (isSelected) {
+      // 선택 해제
+      setSelectedInterests(selectedInterests.filter(item => !(item.type === type && item.value === value)));
+    } else if (selectedInterests.length < 3) {
+      // 선택 추가 (전체 3개 미만일 때만)
+      setSelectedInterests([...selectedInterests, { type, value }]);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,39 +162,59 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // 필수 필드 확인
-    if (!signupData.id || !signupData.name || !signupData.department) {
-      toast.error('필수 정보를 모두 입력해주세요.');
+    if (!signupData.id || !signupData.password) {
+      toast.error('아이디와 비밀번호를 입력해주세요.');
       return;
     }
     
-    // 아이디 중복 확인
     if (usernameCheckStatus !== 'available') {
       toast.error('사용 가능한 아이디를 입력해주세요.');
       return;
     }
     
-    // 비밀번호 일치 확인
     if (signupData.password !== signupData.passwordConfirm) {
       toast.error('비밀번호가 일치하지 않습니다.');
       setPasswordMatchError(true);
       return;
     }
     
-    // 비밀번호 길이 확인
     if (signupData.password.length < 6) {
       toast.error('비밀번호는 최소 6자 이상이어야 합니다.');
       return;
     }
 
+    if (selectedInterests.length < 1) {
+      toast.error('관심 분야를 최소 1개 이상 선택해주세요.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await register(signupData);
+      // 관심 분야를 타입별로 분류
+      const announcementCategories = selectedInterests
+        .filter(item => item.type === 'announcement')
+        .map(item => item.value);
+      const fields = selectedInterests
+        .filter(item => item.type === 'field')
+        .map(item => item.value);
+      const programCategories = selectedInterests
+        .filter(item => item.type === 'program')
+        .map(item => item.value);
+
+      const registerPayload = {
+        ...signupData,
+        interestAnnouncementCategoryName: announcementCategories,
+        interestFieldName: fields,
+        interestProgramCategoryName: programCategories,
+      };
+      
+      const response = await register(registerPayload);
 
       if (response.isSuccess) {
         toast.success('회원가입이 완료되었습니다!');
         const serverId = (response as any).data?.id || signupData.id;
         onLoginSuccess(serverId);
+        // 상태 초기화
         setSignupData({
           id: '',
           password: '',
@@ -122,6 +233,9 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
         });
         setUsernameCheckStatus('idle');
         setPasswordMatchError(false);
+        setSelectedCity('');
+        setSelectedDistrict('');
+        setSelectedInterests([]);
         onClose();
       } else {
         toast.error(response.message || '회원가입 실패');
@@ -142,22 +256,15 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
     setUsernameCheckStatus('checking');
     try {
-      if (username.length < 3) {
-        // 너무 짧으면 아직 검사하지 않음 — 'taken'으로 오해하지 않도록 idle로 유지
-        setUsernameCheckStatus('idle');
-        return;
-      }
-
       const resp = await apiCheckUsernameAvailability(username);
-      // resp.isSuccess === true means 'available' (mock implementation follows that contract)
-      if (resp && resp.isSuccess) {
+      if (resp.isSuccess) {
         setUsernameCheckStatus('available');
       } else {
         setUsernameCheckStatus('taken');
       }
     } catch (error) {
       console.error('아이디 중복 확인 오류:', error);
-      setUsernameCheckStatus('idle');
+      setUsernameCheckStatus('error');
     }
   };
 
@@ -193,23 +300,23 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] !max-h-[95vh] !h-auto flex flex-col p-6 overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>숭실대학교 AI 맞춤형 정보 플랫폼</DialogTitle>
           <DialogDescription>
             로그인하고 맞춤형 학교 공지사항을 확인하세요
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="login" className="flex-1 flex flex-col min-h-0 mt-4">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="login">로그인</TabsTrigger>
             <TabsTrigger value="signup">회원가입</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="login">
+          <TabsContent value="login" className="mt-4 flex-shrink-0">
             <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="login-username">아이디</Label>
                 <Input
                   id="login-username"
@@ -221,7 +328,7 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="login-password">비밀번호</Label>
                 <Input
                   id="login-password"
@@ -239,187 +346,277 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
             </form>
           </TabsContent>
 
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4 max-h-[500px] overflow-y-auto">
-              <div className="space-y-2">
-                <Label htmlFor="signup-username">아이디 *</Label>
-                <Input
-                  id="signup-username"
-                  type="text"
-                  placeholder="아이디를 입력하세요"
-                  value={signupData.id}
-                  onChange={handleUsernameChange}
-                  required
-                />
-                {usernameCheckStatus === 'checking' && (
-                  <p className="text-sm text-gray-500">아이디 확인 중...</p>
-                )}
-                {usernameCheckStatus === 'available' && (
-                  <p className="text-sm text-green-500 flex items-center">
-                    <CheckCircle2 className="inline-block mr-1 w-4 h-4" />
-                    사용 가능한 아이디입니다.
-                  </p>
-                )}
-                {usernameCheckStatus === 'taken' && (
-                  <p className="text-sm text-red-500 flex items-center">
-                    <AlertCircle className="inline-block mr-1 w-4 h-4" />
-                    이미 사용 중인 아이디입니다.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">비밀번호 *</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={signupData.password}
-                  onChange={handlePasswordChange}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-confirm-password">비밀번호 확인 *</Label>
-                <Input
-                  id="signup-confirm-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={signupData.passwordConfirm}
-                  onChange={handleConfirmPasswordChange}
-                  required
-                />
-                {passwordMatchError && (
-                  <p className="text-sm text-red-500 flex items-center">
-                    <AlertCircle className="inline-block mr-1 w-4 h-4" />
-                    비밀번호가 일치하지 않습니다.
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">이름 *</Label>
-                <Input
-                  id="signup-name"
-                  type="text"
-                  placeholder="이름을 입력하세요"
-                  value={signupData.name}
-                  onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-department">학과 *</Label>
-                <Input
-                  id="signup-department"
-                  type="text"
-                  placeholder="예: 소프트웨어학부"
-                  value={signupData.department}
-                  onChange={(e) => setSignupData({ ...signupData, department: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-grade">학년</Label>
-                  <Input
-                    id="signup-grade"
-                    type="number"
-                    min="1"
-                    max="4"
-                    placeholder="1"
-                    value={signupData.grade}
-                    onChange={(e) => setSignupData({ ...signupData, grade: parseInt(e.target.value) || 1 })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-semester">학기</Label>
-                  <Input
-                    id="signup-semester"
-                    type="number"
-                    min="1"
-                    max="8"
-                    placeholder="1"
-                    value={signupData.currentSemester}
-                    onChange={(e) => setSignupData({ ...signupData, currentSemester: parseInt(e.target.value) || 1 })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>성별</Label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="MALE"
-                      checked={signupData.gender === 'MALE'}
-                      onChange={(e) => setSignupData({ ...signupData, gender: e.target.value as 'MALE' | 'FEMALE' })}
-                      className="mr-2"
+          <TabsContent value="signup" className="mt-4 flex-1 min-h-0" style={{display: 'flex', flexDirection: 'column'}}>
+            <div 
+              className="border-4 border-red-500 rounded-lg bg-yellow-50 p-4"
+              style={{
+                height: '450px',
+                overflowY: 'scroll',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <form onSubmit={handleSignup} className="space-y-4">
+                {/* 1. 아이디/비밀번호 */}
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-username">아이디 *</Label>
+                    <Input
+                      id="signup-username"
+                      type="text"
+                      placeholder="아이디를 입력하세요"
+                      value={signupData.id}
+                      onChange={handleUsernameChange}
+                      required
                     />
-                    남성
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="FEMALE"
-                      checked={signupData.gender === 'FEMALE'}
-                      onChange={(e) => setSignupData({ ...signupData, gender: e.target.value as 'MALE' | 'FEMALE' })}
-                      className="mr-2"
+                    {usernameCheckStatus === 'checking' && (
+                      <p className="text-sm text-gray-500">아이디 확인 중...</p>
+                    )}
+                    {usernameCheckStatus === 'available' && (
+                      <p className="text-sm text-green-500 flex items-center">
+                        <CheckCircle2 className="inline-block mr-1 w-4 h-4" />
+                        사용 가능한 아이디입니다.
+                      </p>
+                    )}
+                    {usernameCheckStatus === 'taken' && (
+                      <p className="text-sm text-red-500 flex items-center">
+                        <AlertCircle className="inline-block mr-1 w-4 h-4" />
+                        이미 사용 중인 아이디입니다.
+                      </p>
+                    )}
+                    {usernameCheckStatus === 'error' && (
+                      <p className="text-sm text-orange-500 flex items-center">
+                        <AlertCircle className="inline-block mr-1 w-4 h-4" />
+                        서버 연결 실패. 아이디를 다시 입력하거나 계속 진행하세요.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-password">비밀번호 *</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={signupData.password}
+                      onChange={handlePasswordChange}
+                      required
                     />
-                    여성
-                  </label>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-confirm-password">비밀번호 확인 *</Label>
+                    <Input
+                      id="signup-confirm-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={signupData.passwordConfirm}
+                      onChange={handleConfirmPasswordChange}
+                      required
+                    />
+                    {passwordMatchError && (
+                      <p className="text-sm text-red-500 flex items-center">
+                        <AlertCircle className="inline-block mr-1 w-4 h-4" />
+                        비밀번호가 일치하지 않습니다.
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label>병역여부</Label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="military"
-                      value="true"
-                      checked={signupData.militaryStatus === true}
-                      onChange={() => setSignupData({ ...signupData, militaryStatus: true })}
-                      className="mr-2"
+                {/* 2. 개인정보 및 학적정보 */}
+                <div className="space-y-3 pt-4 border-t">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-name">이름</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      placeholder="이름을 입력하세요"
+                      value={signupData.name}
+                      onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                     />
-                    필
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="military"
-                      value="false"
-                      checked={signupData.militaryStatus === false}
-                      onChange={() => setSignupData({ ...signupData, militaryStatus: false })}
-                      className="mr-2"
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-department">학과 *</Label>
+                    <Input
+                      id="signup-department"
+                      type="text"
+                      placeholder="예: 소프트웨어학부"
+                      value={signupData.department}
+                      onChange={(e) => setSignupData({ ...signupData, department: e.target.value })}
+                      required
                     />
-                    미필
-                  </label>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-status">재학 상태 *</Label>
+                    <Select 
+                      value={signupData.enrollmentStatus} 
+                      onValueChange={(value: 'ENROLLED' | 'LEAVE' | 'GRADUATED') => {
+                        setSignupData({ 
+                          ...signupData, 
+                          enrollmentStatus: value,
+                          grade: value === 'GRADUATED' ? 0 : signupData.grade,
+                          currentSemester: value === 'GRADUATED' ? 0 : signupData.currentSemester,
+                        });
+                      }}
+                    >
+                      <SelectTrigger id="signup-status">
+                        <SelectValue placeholder="재학상태를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ENROLLED">재학</SelectItem>
+                        <SelectItem value="LEAVE">휴학</SelectItem>
+                        <SelectItem value="GRADUATED">졸업</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {signupData.enrollmentStatus !== 'GRADUATED' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="signup-grade">학년 *</Label>
+                        <Input
+                          id="signup-grade"
+                          type="number"
+                          min="1"
+                          max="4"
+                          placeholder="1"
+                          value={signupData.grade}
+                          onChange={(e) => setSignupData({ ...signupData, grade: parseInt(e.target.value) || 1 })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="signup-semester">학기 *</Label>
+                        <Input
+                          id="signup-semester"
+                          type="number"
+                          min="1"
+                          max="8"
+                          placeholder="1"
+                          value={signupData.currentSemester}
+                          onChange={(e) => setSignupData({ ...signupData, currentSemester: parseInt(e.target.value) || 1 })}
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-gender">성별</Label>
+                    <Select 
+                      value={signupData.gender} 
+                      onValueChange={(value: 'MALE' | 'FEMALE') => {
+                        setSignupData({ ...signupData, gender: value });
+                      }}
+                    >
+                      <SelectTrigger id="signup-gender">
+                        <SelectValue placeholder="성별을 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MALE">남성</SelectItem>
+                        <SelectItem value="FEMALE">여성</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-military">병역여부</Label>
+                    <Select 
+                      value={signupData.militaryStatus.toString()} 
+                      onValueChange={(value: string) => {
+                        setSignupData({ ...signupData, militaryStatus: value === 'true' });
+                      }}
+                    >
+                      <SelectTrigger id="signup-military">
+                        <SelectValue placeholder="군필 여부를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">군필</SelectItem>
+                        <SelectItem value="false">미필 / 해당없음</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-city">시/도 선택</Label>
+                      <select
+                        id="signup-city"
+                        value={selectedCity}
+                        onChange={(e) => handleCityChange(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="">시/도 선택</option>
+                        <option value="서울특별시">서울특별시</option>
+                        <option value="부산광역시">부산광역시</option>
+                        <option value="대구광역시">대구광역시</option>
+                        <option value="인천광역시">인천광역시</option>
+                        <option value="광주광역시">광주광역시</option>
+                        <option value="대전광역시">대전광역시</option>
+                        <option value="울산광역시">울산광역시</option>
+                        <option value="세종특별자치시">세종특별자치시</option>
+                        <option value="경기도">경기도</option>
+                        <option value="강원특별자치도">강원특별자치도</option>
+                        <option value="충청북도">충청북도</option>
+                        <option value="충청남도">충청남도</option>
+                        <option value="전북특별자치도">전북특별자치도</option>
+                        <option value="전라남도">전라남도</option>
+                        <option value="경상북도">경상북도</option>
+                        <option value="경상남도">경상남도</option>
+                        <option value="제주특별자치도">제주특별자치도</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-district">시/군/구 선택</Label>
+                      <select
+                        id="signup-district"
+                        value={selectedDistrict}
+                        onChange={(e) => handleDistrictChange(e.target.value)}
+                        disabled={!selectedCity}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="">시/군/구 선택</option>
+                        {selectedCity && districtsByCity[selectedCity]?.map((district) => (
+                          <option key={district} value={district}>{district}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-residence">거주지</Label>
-                <Input
-                  id="signup-residence"
-                  type="text"
-                  placeholder="예: 서울시 동작구"
-                  value={signupData.residence}
-                  onChange={(e) => setSignupData({ ...signupData, residence: e.target.value })}
-                />
-              </div>
+                {/* 3. 관심 분야 */}
+                <div className="space-y-2 pt-4 border-t">
+                  <Label>관심 분야 선택 * (최소 1개, 최대 3개)</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {interestOptions.map((option) => {
+                      const isSelected = selectedInterests.some(
+                        item => item.type === option.type && item.value === option.value
+                      );
+                      return (
+                        <Button
+                          key={`${option.type}-${option.value}`}
+                          type="button"
+                          size="sm"
+                          variant={isSelected ? 'default' : 'outline'}
+                          onClick={() => handleInterestToggle(option.type, option.value)}
+                          className="w-full text-xs h-9"
+                          disabled={!isSelected && selectedInterests.length >= 3}
+                        >
+                          {option.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-sm text-gray-500">{selectedInterests.length}/3개 선택됨</p>
+                </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? '회원가입 중...' : '회원가입'}
-              </Button>
-            </form>
+                {/* 회원가입 버튼 */}
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? '회원가입 중...' : '회원가입'}
+                </Button>
+              </form>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>
