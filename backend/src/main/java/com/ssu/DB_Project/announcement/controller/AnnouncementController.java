@@ -10,14 +10,22 @@ import com.ssu.DB_Project.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/announcement")
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
-    private final AnnouncementChatService announcementChatService;
+
+    @Autowired
+    public AnnouncementController(AnnouncementService announcementService) {
+        this.announcementService = announcementService;
+    }
+
+    // private final AnnouncementService announcementService;
+    // private final AnnouncementChatService announcementChatService;
 
     @PostMapping("/process")
     public ResponseEntity<Announcement> processAnnouncement(@RequestBody AnnouncementProcessRequest request) {
@@ -25,11 +33,11 @@ public class AnnouncementController {
         return ResponseEntity.ok(saved);
     }
 
-    @PostMapping("/chat/ask")
+    /* @PostMapping("/chat/ask")
     public ResponseEntity<String> chat(@RequestBody AnnouncementChatRequest request) {
         String answer = announcementChatService.ask(request.userId(), request.question());
         return ResponseEntity.ok(answer);
-    }
+    }*/
     // 공지사항 단건 조회
     @GetMapping("/{announcementId}")
     public ResponseEntity<ApiResponse<AnnouncementResponse>> getAnnouncement(

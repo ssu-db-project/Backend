@@ -31,9 +31,9 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
     setIsLoading(true);
     try {
-      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
+      // API 호출 준비 (백엔드 DTO에 맞춰 'id' 필드를 사용)
       const response = await login({
-        username: loginData.username,
+        id: loginData.username,
         password: loginData.password,
       });
 
@@ -56,20 +56,20 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 아이디 중복 확인
     if (usernameCheckStatus !== 'available') {
       toast.error('사용 가능한 아이디를 입력해주세요.');
       return;
     }
-    
+
     // 비밀번호 일치 확인
     if (signupData.password !== signupData.confirmPassword) {
       toast.error('비밀번호가 일치하지 않습니다.');
       setPasswordMatchError(true);
       return;
     }
-    
+
     // 비밀번호 길이 확인
     if (signupData.password.length < 6) {
       toast.error('비밀번호는 최소 6자 이상이어야 합니다.');
@@ -78,9 +78,9 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
     setIsLoading(true);
     try {
-      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
+      // API 호출 준비 (백엔드 DTO에 맞춰 'id' 필드를 사용)
       const response = await register({
-        username: signupData.username,
+        id: signupData.username,
         password: signupData.password,
         confirmPassword: signupData.confirmPassword,
       });
@@ -119,12 +119,27 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
       }
 
       const resp = await apiCheckUsernameAvailability(username);
-      // resp.isSuccess === true means 'available' (mock implementation follows that contract)
+
+      // 💡 [최종 수정 로직] 중복 로직 제거 및 data 값으로 명확하게 분기
       if (resp && resp.isSuccess) {
-        setUsernameCheckStatus('available');
+
+        // resp.data가 boolean 형태의 중복 여부 (false = 사용 가능, true = 사용 불가)
+        if (resp.data === false) {
+            // 백엔드가 '중복 아님' (false)을 보낸 경우
+            setUsernameCheckStatus('available');
+        } else if (resp.data === true) {
+            // 백엔드가 '중복임' (true)을 보낸 경우
+            setUsernameCheckStatus('taken');
+        } else {
+            // 예상치 못한 데이터 필드 (안전 장치)
+            setUsernameCheckStatus('idle');
+        }
+
       } else {
+        // API 호출 자체가 실패했거나 (isSuccess: false 반환)
         setUsernameCheckStatus('taken');
       }
+
     } catch (error) {
       console.error('아이디 중복 확인 오류:', error);
       setUsernameCheckStatus('idle');

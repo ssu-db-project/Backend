@@ -1,7 +1,6 @@
 /**
  * 사용자 인증 API 서비스
- * 
- * 백엔드 API 명세:
+ * * 백엔드 API 명세:
  * - POST /api/user/register - 회원가입
  * - POST /api/user/login - 로그인
  * - POST /api/user/logout - 로그아웃
@@ -21,13 +20,15 @@ interface AuthResponse {
   data?: any;
 }
 
+// 💡 [수정] DTO 일치를 위해 필드 이름을 'id'로 변경
 interface LoginRequest {
-  username: string;
+  id: string;
   password: string;
 }
 
+// 💡 [수정] DTO 일치를 위해 필드 이름을 'id'로 변경
 interface RegisterRequest {
-  username: string;
+  id: string;
   password: string;
   confirmPassword?: string;
 }
@@ -46,8 +47,9 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
       },
       credentials: 'include',
       body: JSON.stringify({
-        username: request.username,
+        id: request.id, // 💡 DTO에 맞게 request.id 사용
         password: request.password,
+        confirmPassword: request.confirmPassword,
       }),
     });
 
@@ -69,13 +71,18 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
  */
 export async function login(request: LoginRequest): Promise<AuthResponse> {
   try {
+    const payload = {
+          id: request.id, // 💡 DTO에 맞게 request.id 사용
+          password: request.password
+        };
+
     const response = await fetch(`${API_BASE_URL}/user/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify(request),
+      body: JSON.stringify(payload), // 💡 수정된 payload 전송
     });
 
     if (!response.ok) {
@@ -91,7 +98,6 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
 
 /**
  * 로그아웃
- * @returns 로그아웃 결과
  */
 export async function logout(): Promise<AuthResponse> {
   try {
@@ -116,7 +122,6 @@ export async function logout(): Promise<AuthResponse> {
 
 /**
  * 사용자 프로필 조회
- * @returns 사용자 프로필 정보
  */
 export async function getUserProfile(): Promise<AuthResponse> {
   try {
@@ -141,8 +146,6 @@ export async function getUserProfile(): Promise<AuthResponse> {
 
 /**
  * 사용자 프로필 업데이트
- * @param profile - 업데이트할 프로필 정보
- * @returns 업데이트 결과
  */
 export async function updateUserProfile(profile: Partial<UserProfile>): Promise<AuthResponse> {
   try {
@@ -168,7 +171,6 @@ export async function updateUserProfile(profile: Partial<UserProfile>): Promise<
 
 /**
  * 사용자 관심분야 조회
- * @returns 관심분야 목록
  */
 export async function getUserInterests(): Promise<AuthResponse> {
   try {
@@ -193,8 +195,6 @@ export async function getUserInterests(): Promise<AuthResponse> {
 
 /**
  * 사용자 관심분야 업데이트
- * @param interests - 관심분야 목록
- * @returns 업데이트 결과
  */
 export async function updateUserInterests(interests: string[]): Promise<AuthResponse> {
   try {
@@ -223,6 +223,7 @@ export async function updateUserInterests(interests: string[]): Promise<AuthResp
  */
 export async function checkUsernameAvailability(username: string): Promise<AuthResponse> {
   try {
+    // 💡 [수정] 백엔드 컨트롤러 명세에 맞게 쿼리 파라미터를 'username'으로 복구
     const response = await fetch(`${API_BASE_URL}/user/check-username?username=${encodeURIComponent(username)}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

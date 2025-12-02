@@ -28,6 +28,7 @@ dependencies {
 
     // DB
     runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -56,9 +57,19 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.named('bootRun') {
+    // 쉘 환경 변수를 시스템 속성으로 JVM에 전달
+    systemProperty 'OPENAI_API_KEY', System.getenv('OPENAI_API_KEY')
+    systemProperty 'SSU_ID', System.getenv('SSU_ID')
+    systemProperty 'SSU_PW', System.getenv('SSU_PW')
+}
 
-
-
+tasks.named('bootRun') {
+    // 쉘 환경 변수를 시스템 속성으로 JVM에 전달
+    systemProperty 'OPENAI_API_KEY', System.getenv('OPENAI_API_KEY')
+    systemProperty 'SSU_ID', System.getenv('SSU_ID')
+    systemProperty 'SSU_PW', System.getenv('SSU_PW')
+}
 
 //plugins {
 //    id 'java'

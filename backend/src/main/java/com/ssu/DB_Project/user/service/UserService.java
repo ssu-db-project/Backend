@@ -141,6 +141,10 @@ public class UserService {
 
     @Transactional
     public User login(LoginRequest request) {
+        if (request.id() == null || request.id().isBlank()) {
+            throw new IllegalArgumentException("아이디는 필수 입력 항목입니다.");
+        }
+
         User user = userRepository.findById(request.id())
             .orElseThrow(()->new IllegalArgumentException("존재하지 않는 아이디입니다."));
         if (!user.getPassword().equals(request.password())) {

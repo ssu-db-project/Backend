@@ -24,7 +24,7 @@ public class ProgramService {
     private final ProgramRepository programRepository;
     private final ProgramCategoryRepository categoryRepository;
     private final ChatLanguageModel chatModel;
-    private final VectorIngestionService vectorIngestionService;
+    // private final VectorIngestionService vectorIngestionService;
 
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -117,7 +117,7 @@ public class ProgramService {
 
         Program saved = programRepository.save(program);
 
-        vectorIngestionService.embedProgram(saved);
+        // vectorIngestionService.embedProgram(saved);
 
         return saved;
     }

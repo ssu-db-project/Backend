@@ -14,6 +14,7 @@ import dev.langchain4j.store.embedding.chroma.ChromaEmbeddingStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class LangChainConfig {
@@ -42,6 +43,7 @@ public class LangChainConfig {
     }
 
     @Bean
+    @Profile("prod")
     public EmbeddingStore<TextSegment> embeddingStore() {
         // ❗ 반드시 builder() 방식 사용해야 함
         return ChromaEmbeddingStore.builder()
@@ -53,6 +55,7 @@ public class LangChainConfig {
     }
 
     @Bean
+    @Profile("prod")
     public EmbeddingStoreIngestor embeddingStoreIngestor(
             EmbeddingStore<TextSegment> embeddingStore,
             EmbeddingModel embeddingModel
