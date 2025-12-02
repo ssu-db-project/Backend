@@ -12,4 +12,10 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Stri
     List<Announcement> findTop10ByDepartmentNameOrderByPostedAtDesc(String departmentName);
     List<Announcement> findByCategory_NameOrderByPostedAtDesc(String categoryName);
     boolean existsByUrl(String url);
+
+    List<Announcement> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrSummaryContainingIgnoreCase(
+            String titleKeyword,
+            String contentKeyword,
+            String summaryKeyword
+    );
 }
