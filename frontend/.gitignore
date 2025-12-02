@@ -1,5 +1,6 @@
 # Vite & build
 dist/
+build/
 .vite/
 
 # Dependencies

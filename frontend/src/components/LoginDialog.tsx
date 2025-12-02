@@ -15,8 +15,23 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps) {
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [signupData, setSignupData] = useState({ username: '', password: '', confirmPassword: '' });
+  const [loginData, setLoginData] = useState({ id: '', password: '' });
+  const [signupData, setSignupData] = useState({
+    id: '',
+    password: '',
+    passwordConfirm: '',
+    name: '',
+    gender: 'MALE' as 'MALE' | 'FEMALE',
+    militaryStatus: false,
+    grade: 1,
+    currentSemester: 1,
+    department: '',
+    enrollmentStatus: 'ENROLLED' as 'ENROLLED' | 'LEAVE' | 'GRADUATED',
+    residence: '',
+    interestAnnouncementCategoryName: [] as string[],
+    interestFieldName: [] as string[],
+    interestProgramCategoryName: [] as string[],
+  });
   const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [passwordMatchError, setPasswordMatchError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,24 +39,23 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!loginData.username || !loginData.password) {
+    if (!loginData.id || !loginData.password) {
       toast.error('아이디와 비밀번호를 입력해주세요.');
       return;
     }
 
     setIsLoading(true);
     try {
-      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
       const response = await login({
-        username: loginData.username,
+        id: loginData.id,
         password: loginData.password,
       });
 
       if (response.isSuccess) {
         toast.success('로그인이 완료되었습니다!');
-        const serverId = (response as any).data?.id || (response as any).data?.userId || loginData.username;
+        const serverId = (response as any).data?.id || loginData.id;
         onLoginSuccess(serverId);
-        setLoginData({ username: '', password: '' });
+        setLoginData({ id: '', password: '' });
         onClose();
       } else {
         toast.error(response.message || '로그인 실패');
@@ -57,6 +71,12 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // 필수 필드 확인
+    if (!signupData.id || !signupData.name || !signupData.department) {
+      toast.error('필수 정보를 모두 입력해주세요.');
+      return;
+    }
+    
     // 아이디 중복 확인
     if (usernameCheckStatus !== 'available') {
       toast.error('사용 가능한 아이디를 입력해주세요.');
@@ -64,7 +84,7 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
     }
     
     // 비밀번호 일치 확인
-    if (signupData.password !== signupData.confirmPassword) {
+    if (signupData.password !== signupData.passwordConfirm) {
       toast.error('비밀번호가 일치하지 않습니다.');
       setPasswordMatchError(true);
       return;
@@ -78,18 +98,28 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
     setIsLoading(true);
     try {
-      // API 호출 준비 (실제 연결은 백엔드 팀이 진행)
-      const response = await register({
-        username: signupData.username,
-        password: signupData.password,
-        confirmPassword: signupData.confirmPassword,
-      });
+      const response = await register(signupData);
 
       if (response.isSuccess) {
         toast.success('회원가입이 완료되었습니다!');
-        const serverId = (response as any).data?.id || signupData.username;
+        const serverId = (response as any).data?.id || signupData.id;
         onLoginSuccess(serverId);
-        setSignupData({ username: '', password: '', confirmPassword: '' });
+        setSignupData({
+          id: '',
+          password: '',
+          passwordConfirm: '',
+          name: '',
+          gender: 'MALE',
+          militaryStatus: false,
+          grade: 1,
+          currentSemester: 1,
+          department: '',
+          enrollmentStatus: 'ENROLLED',
+          residence: '',
+          interestAnnouncementCategoryName: [],
+          interestFieldName: [],
+          interestProgramCategoryName: [],
+        });
         setUsernameCheckStatus('idle');
         setPasswordMatchError(false);
         onClose();
@@ -132,10 +162,10 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   };
 
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const username = e.target.value;
-    setSignupData({ ...signupData, username });
-    if (username) {
-      checkUsernameAvailability(username);
+    const id = e.target.value;
+    setSignupData({ ...signupData, id });
+    if (id) {
+      checkUsernameAvailability(id);
     } else {
       setUsernameCheckStatus('idle');
     }
@@ -144,7 +174,7 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const password = e.target.value;
     setSignupData({ ...signupData, password });
-    if (signupData.confirmPassword && password !== signupData.confirmPassword) {
+    if (signupData.passwordConfirm && password !== signupData.passwordConfirm) {
       setPasswordMatchError(true);
     } else {
       setPasswordMatchError(false);
@@ -152,9 +182,9 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
   };
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const confirmPassword = e.target.value;
-    setSignupData({ ...signupData, confirmPassword });
-    if (signupData.password && confirmPassword !== signupData.password) {
+    const passwordConfirm = e.target.value;
+    setSignupData({ ...signupData, passwordConfirm });
+    if (signupData.password && passwordConfirm !== signupData.password) {
       setPasswordMatchError(true);
     } else {
       setPasswordMatchError(false);
@@ -185,8 +215,8 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                   id="login-username"
                   type="text"
                   placeholder="아이디를 입력하세요"
-                  value={loginData.username}
-                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+                  value={loginData.id}
+                  onChange={(e) => setLoginData({ ...loginData, id: e.target.value })}
                   required
                 />
               </div>
@@ -210,14 +240,14 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
           </TabsContent>
 
           <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4">
+            <form onSubmit={handleSignup} className="space-y-4 max-h-[500px] overflow-y-auto">
               <div className="space-y-2">
-                <Label htmlFor="signup-username">아이디</Label>
+                <Label htmlFor="signup-username">아이디 *</Label>
                 <Input
                   id="signup-username"
                   type="text"
                   placeholder="아이디를 입력하세요"
-                  value={signupData.username}
+                  value={signupData.id}
                   onChange={handleUsernameChange}
                   required
                 />
@@ -239,7 +269,7 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-password">비밀번호</Label>
+                <Label htmlFor="signup-password">비밀번호 *</Label>
                 <Input
                   id="signup-password"
                   type="password"
@@ -251,12 +281,12 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="signup-confirm-password">비밀번호 확인</Label>
+                <Label htmlFor="signup-confirm-password">비밀번호 확인 *</Label>
                 <Input
                   id="signup-confirm-password"
                   type="password"
                   placeholder="••••••••"
-                  value={signupData.confirmPassword}
+                  value={signupData.passwordConfirm}
                   onChange={handleConfirmPasswordChange}
                   required
                 />
@@ -266,6 +296,124 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                     비밀번호가 일치하지 않습니다.
                   </p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-name">이름 *</Label>
+                <Input
+                  id="signup-name"
+                  type="text"
+                  placeholder="이름을 입력하세요"
+                  value={signupData.name}
+                  onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-department">학과 *</Label>
+                <Input
+                  id="signup-department"
+                  type="text"
+                  placeholder="예: 소프트웨어학부"
+                  value={signupData.department}
+                  onChange={(e) => setSignupData({ ...signupData, department: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-grade">학년</Label>
+                  <Input
+                    id="signup-grade"
+                    type="number"
+                    min="1"
+                    max="4"
+                    placeholder="1"
+                    value={signupData.grade}
+                    onChange={(e) => setSignupData({ ...signupData, grade: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-semester">학기</Label>
+                  <Input
+                    id="signup-semester"
+                    type="number"
+                    min="1"
+                    max="8"
+                    placeholder="1"
+                    value={signupData.currentSemester}
+                    onChange={(e) => setSignupData({ ...signupData, currentSemester: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>성별</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="MALE"
+                      checked={signupData.gender === 'MALE'}
+                      onChange={(e) => setSignupData({ ...signupData, gender: e.target.value as 'MALE' | 'FEMALE' })}
+                      className="mr-2"
+                    />
+                    남성
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="FEMALE"
+                      checked={signupData.gender === 'FEMALE'}
+                      onChange={(e) => setSignupData({ ...signupData, gender: e.target.value as 'MALE' | 'FEMALE' })}
+                      className="mr-2"
+                    />
+                    여성
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>병역여부</Label>
+                <div className="flex gap-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="military"
+                      value="true"
+                      checked={signupData.militaryStatus === true}
+                      onChange={() => setSignupData({ ...signupData, militaryStatus: true })}
+                      className="mr-2"
+                    />
+                    필
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="military"
+                      value="false"
+                      checked={signupData.militaryStatus === false}
+                      onChange={() => setSignupData({ ...signupData, militaryStatus: false })}
+                      className="mr-2"
+                    />
+                    미필
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-residence">거주지</Label>
+                <Input
+                  id="signup-residence"
+                  type="text"
+                  placeholder="예: 서울시 동작구"
+                  value={signupData.residence}
+                  onChange={(e) => setSignupData({ ...signupData, residence: e.target.value })}
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
