@@ -11,7 +11,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collap
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { getInterestAnnouncements, getInterestPrograms, searchPolicies } from '../lib/api/notices';
+import { getInterestAnnouncements, getInterestPrograms, searchAnnouncementsAndPrograms } from '../lib/api/notices';
 
 const mockSupportData: SupportInfo[] = [
   {
@@ -321,25 +321,28 @@ export function MainPlatform({
       }
 
       try {
-        const resp = await searchPolicies(searchQuery.trim());
-        const data = (resp as any).data || [];
-        const mapped: SupportInfo[] = data.map((n: any) => ({
-          id: String(n.id || n.noticeId || n.notice_id || n.id),
-          title: n.title || n.subject || '',
-          summary: n.summary || n.description || '',
-          description: n.description || n.fullText || '',
-          fullText: n.fullText || n.description || '',
-          sourceUrl: n.link || n.sourceUrl || '',
-          category: n.category || '기타',
-          eligibility: n.eligibility || '-',
-          amount: n.amount || '-',
-          deadline: n.deadline || n.date || '',
-          agency: n.agency || '',
-          tags: n.tags || [],
+        // 공지/비교과 통합 검색 API 호출
+        const searchResults = await searchAnnouncementsAndPrograms(searchQuery.trim());
+        
+        // SearchResultDto[] → SupportInfo[] 변환
+        const mapped: SupportInfo[] = searchResults.map((result) => ({
+          id: result.id,
+          title: result.title,
+          summary: result.sourceContent.substring(0, 100) + '...', // 원본 내용 일부를 요약으로
+          description: result.sourceContent,
+          fullText: result.sourceContent,
+          sourceUrl: '', // SearchResultDto에는 URL 없음
+          category: result.type === 'announcement' ? '공지사항' : '비교과',
+          eligibility: '-',
+          amount: '-',
+          deadline: '',
+          agency: result.type === 'announcement' ? '공지사항' : '비교과 프로그램',
+          tags: [result.type],
         }));
         if (mounted) setSupports(mapped.length ? mapped : mockSupportData);
       } catch (error) {
-        console.error('정책 검색 오류:', error);
+        console.error('검색 오류:', error);
+        if (mounted) setSupports(mockSupportData);
       }
     }
 
