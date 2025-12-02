@@ -26,7 +26,7 @@ public class AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final AnnouncementCategoryRepository categoryRepository;
     private final ChatLanguageModel chatModel;
-    private final VectorIngestionService vectorIngestionService;
+    // private final VectorIngestionService vectorIngestionService;
     private final AnnouncementFileRepository announcementFileRepository;
     private final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -101,7 +101,7 @@ public class AnnouncementService {
             }
         }
         // 벡터 DB 저장
-        vectorIngestionService.embedAnnouncement(saved);
+        // vectorIngestionService.embedAnnouncement(saved);
 
         return saved;
     }

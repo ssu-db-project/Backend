@@ -8,18 +8,32 @@ import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 @Slf4j
 public class VectorIngestionService {
 
-    private final EmbeddingStoreIngestor embeddingStoreIngestor;
+    // @Autowired(required = false)
+    // private final EmbeddingStoreIngestor embeddingStoreIngestor;
+    private EmbeddingStoreIngestor embeddingStoreIngestor;
+
+    @Autowired(required = false)
+    public void setEmbeddingStoreIngestor(EmbeddingStoreIngestor embeddingStoreIngestor) {
+        this.embeddingStoreIngestor = embeddingStoreIngestor;
+    }
 
     public void embedAnnouncement(Announcement a) {
+        if (embeddingStoreIngestor == null) {
+            System.out.println("AI 모듈 비활성화 상태 : 임베딩을 건너뜁니다.");
+
+            return ;
+        }
+
         try {
 
             Map<String, Object> metadata = new HashMap<>();
@@ -43,6 +57,11 @@ public class VectorIngestionService {
     }
 
     public void embedProgram(Program p) {
+        if (embeddingStoreIngestor == null) {
+            System.out.println("AI 모듈 비활성화 상태 : 임베딩을 건너뜁니다.");
+            return;
+        }
+
         try {
 
             Map<String, Object> metadata = new HashMap<>();

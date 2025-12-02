@@ -11,14 +11,20 @@ import com.ssu.DB_Project.program.service.ProgramService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/program")
-@RequiredArgsConstructor
+// @RequiredArgsConstructor
 public class ProgramController {
 
     private final ProgramService programService;
-    private final ProgramChatService programChatService;
+    // private final ProgramChatService programChatService;
+
+    @Autowired
+    public ProgramController(ProgramService programService) {
+        this.programService = programService;
+    }
 
     @PostMapping("/process")
     public ResponseEntity<Program> processProgram(@RequestBody ProgramProcessRequest request) {
@@ -26,11 +32,13 @@ public class ProgramController {
         return ResponseEntity.ok(saved);
     }
 
-    @PostMapping("/chat/ask")
+    /* @PostMapping("/chat/ask")
     public ResponseEntity<String> chat(@RequestBody ProgramChatRequest request) {
         String answer = programChatService.ask(request.userId(), request.question());
         return ResponseEntity.ok(answer);
     }
+    */
+
     // 프로그램 단건 조회
     @GetMapping("/{programId}")
     public ResponseEntity<ApiResponse<ProgramResponse>> getProgram(

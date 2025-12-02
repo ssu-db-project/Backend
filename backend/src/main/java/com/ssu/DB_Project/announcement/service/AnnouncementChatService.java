@@ -18,7 +18,7 @@ import java.util.List;
 
 import static dev.langchain4j.store.embedding.filter.MetadataFilterBuilder.metadataKey;
 
-@Service
+// @Service
 @RequiredArgsConstructor
 public class AnnouncementChatService {
 

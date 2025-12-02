@@ -106,4 +106,17 @@ public class UserController {
         return loginUser.getId();
     }
 
+    @GetMapping("/check-username")
+    public ResponseEntity<ApiResponse<Boolean>> checkUsernameDuplicate(@RequestParam String username) {
+        // ID 중복 여부 확인
+        boolean isDuplicate = userService.checkIdDuplicate(username);
+
+        if (isDuplicate) {
+            // 중복일 경우 (사용 불가능)
+            return ResponseEntity.ok(ApiResponse.success("사용 불가능한 아이디입니다.", true));
+        } else {
+            // 중복이 아닐 경우 (사용 가능)
+            return ResponseEntity.ok(ApiResponse.success("사용 가능한 아이디입니다.", false));
+        }
+    }
 }
