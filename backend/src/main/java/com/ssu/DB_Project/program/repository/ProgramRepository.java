@@ -10,4 +10,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ProgramRepository extends JpaRepository<Program, String> {
     List<Program> findByCategory_IdInOrderByCreatedAtDesc(Set<String> categoryIds);
     boolean existsByOriginalUrl(String originalUrl);
+
+    List<Program> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCaseOrSubtitleContainingIgnoreCase(
+            String titleKeyword,
+            String contentKeyword,
+            String subtitleKeyword
+    );
 }

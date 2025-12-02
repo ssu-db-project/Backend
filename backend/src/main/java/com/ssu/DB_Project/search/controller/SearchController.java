@@ -1,8 +1,8 @@
 package com.ssu.DB_Project.search.controller;
 
+import com.ssu.DB_Project.search.dto.SearchRequest;
 import com.ssu.DB_Project.search.dto.SearchResultDto;
 import com.ssu.DB_Project.search.service.SearchService;
-import com.ssu.DB_Project.search.dto.SearchRequest;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
