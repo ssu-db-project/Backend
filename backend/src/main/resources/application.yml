@@ -46,9 +46,7 @@ management:
       exposure:
         include: health,info
 
-#ssu:
-#  id: ${SSU_ID}
-#  pw: ${SSU_PW}
 ssu:
-  id: 20221805
-  pw: 090711aa**
+  id: ${SSU_ID}
+  pw: ${SSU_PW}
+
