@@ -220,31 +220,31 @@ CREATE TABLE announcement_file (
     FOREIGN KEY (announcement_id) REFERENCES announcement(id) ON DELETE CASCADE
 );
 
--- 공지사항 관심분야 매핑
+-- 1. 공지사항 관심분야 매핑 (수정됨)
 CREATE TABLE user_interest_category (
     user_id VARCHAR(20) NOT NULL,
     category_id VARCHAR(20) NOT NULL,
     PRIMARY KEY (user_id, category_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (category_id) REFERENCES announcement_category(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, -- ★ 여기 추가
+    FOREIGN KEY (category_id) REFERENCES announcement_category(id) ON DELETE CASCADE -- 카테고리 지워져도 같이 삭제
 );
 
--- 관심 키워드 매핑
+-- 2. 관심 키워드 매핑 (수정됨)
 CREATE TABLE user_interest_field (
     user_id VARCHAR(20) NOT NULL,
     field_id VARCHAR(20) NOT NULL,
     PRIMARY KEY (user_id, field_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (field_id) REFERENCES interest_field(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, -- ★ 여기 추가
+    FOREIGN KEY (field_id) REFERENCES interest_field(id) ON DELETE CASCADE
 );
 
--- [추가] 비교과 관심 카테고리 매핑 (User 엔티티에 있다면 필요함)
+-- 3. 비교과 관심 카테고리 매핑 (수정됨)
 CREATE TABLE user_interest_program_category (
     user_id VARCHAR(20) NOT NULL,
     category_id VARCHAR(20) NOT NULL,
     PRIMARY KEY (user_id, category_id),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (category_id) REFERENCES program_category(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, -- ★ 여기 추가
+    FOREIGN KEY (category_id) REFERENCES program_category(id) ON DELETE CASCADE
 );
 -- 북마크 테이블
 CREATE TABLE bookmark (
