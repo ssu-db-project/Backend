@@ -30,7 +30,7 @@ public class AnnouncementChatService {
     private final AnnouncementRepository announcementRepository;
 
     /**
-     * RAG 기반 공지 Q/A 서비스
+     * RAG 기반 공지 Q/A 서비스 (관심 분야 interestField 기반)
      */
     public String ask(String userId, String question) {
 
@@ -38,16 +38,15 @@ public class AnnouncementChatService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2) 사용자 관심 카테고리 목록
-        List<String> categoryIds = user.getInterestCategories().stream()
-                .map(uc -> uc.getCategory().getId())
+        // 2) 사용자 관심 "분야" (InterestField) 목록
+        List<String> interestFields = user.getInterestFields().stream()
+                .map(uif -> uif.getField().getName())   // 예: "AI", "반도체", "창업" 등
                 .toList();
 
-        // 3) 메타데이터 필터 생성
-        var filter = metadataKey("type").isEqualTo("announcement")
-                .and(metadataKey("category_id").isIn(categoryIds));
+        // 3) 메타데이터 필터: 공지(type=announcement)만 검색
+        var filter = metadataKey("type").isEqualTo("announcement");
 
-        // 4) RAG - Retriever 구성
+        // 4) Retriever 구성
         ContentRetriever retriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
@@ -55,13 +54,37 @@ public class AnnouncementChatService {
                 .filter(filter)
                 .build();
 
-        // 5) RAG - QA Chain 구성
+        // 5) 사용자 정보를 포함한 확장 질문
+        String enrichedQuestion = """
+                당신은 숭실대학교 학생에게 공지사항을 추천/설명하는 AI 어시스턴트입니다.
+
+                사용자 정보:
+                - 이름: %s
+                - 성별: %s
+                - 전공: %s
+                - 학년: %d
+                - 관심 분야: %s
+
+                위 사용자의 관심 분야와 학년, 전공을 고려해서
+                아래 질문에 가장 잘 맞는 공지사항을 중심으로 친절히 설명해 주세요.
+
+                질문: %s
+                """.formatted(
+                user.getName(),
+                user.getGender(),
+                user.getDepartment() != null ? user.getDepartment().getName() : "없음",
+                user.getGrade() != null ? user.getGrade() : 0,
+                interestFields,
+                question
+        );
+
+        // 6) QA Chain 실행
         ConversationalRetrievalChain chain = ConversationalRetrievalChain.builder()
                 .chatLanguageModel(chatLanguageModel)
                 .contentRetriever(retriever)
                 .build();
 
-        // 6) LLM 실행
-        return chain.execute(question);
+        return chain.execute(enrichedQuestion);
     }
 }
+

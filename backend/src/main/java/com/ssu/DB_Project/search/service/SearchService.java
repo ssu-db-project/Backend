@@ -81,8 +81,10 @@ public class SearchService {
         }
 
         return dedup.values().stream()
+                .filter(r -> r.getSimilarity() >= 0.95)  // ★ 추가: 유사도 기준 필터링
                 .sorted(Comparator.comparingDouble(SearchResultDto::getSimilarity).reversed())
                 .toList();
+
     }
 }
 

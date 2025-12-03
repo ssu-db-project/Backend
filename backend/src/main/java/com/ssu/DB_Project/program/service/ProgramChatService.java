@@ -30,7 +30,7 @@ public class ProgramChatService {
     private final ProgramRepository programRepository;
 
     /**
-     * 프로그램 추천/질문 RAG 서비스
+     * 프로그램 추천/질문 RAG 서비스 (interestField 기반)
      */
     public String ask(String userId, String question) {
 
@@ -38,15 +38,14 @@ public class ProgramChatService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 2) 관심 분야 (필요 시 프롬프트에 활용)
+        // 2) 관심 분야 목록
         List<String> interestFields = user.getInterestFields().stream()
-                .map(f -> f.getField().getName())
+                .map(uif -> uif.getField().getName())
                 .toList();
 
-        // 3) metadata 필터 (program 문서만 검색)
+        // 3) 프로그램(type=program)만 검색
         var filter = metadataKey("type").isEqualTo("program");
 
-        // 4) Retriever 구성
         ContentRetriever retriever = EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(embeddingStore)
                 .embeddingModel(embeddingModel)
@@ -54,14 +53,19 @@ public class ProgramChatService {
                 .filter(filter)
                 .build();
 
-        // 5) 사용자 개인정보를 prompt에 포함 (추천 품질 ↑)
+        // 4) 사용자 정보 + 관심분야를 포함한 프롬프트
         String enrichedQuestion = """
+                당신은 숭실대학교 학생에게 비교과 프로그램을 추천/설명하는 AI 어시스턴트입니다.
+
                 사용자 정보:
                 - 이름: %s
                 - 성별: %s
                 - 전공: %s
                 - 학년: %d
-                - 관심분야: %s
+                - 관심 분야: %s
+
+                위 사용자의 관심 분야와 학년, 전공에 맞는 비교과 프로그램을 위주로,
+                아래 질문에 답변해 주세요.
 
                 질문: %s
                 """.formatted(
@@ -73,7 +77,6 @@ public class ProgramChatService {
                 question
         );
 
-        // 6) QA chain
         ConversationalRetrievalChain chain = ConversationalRetrievalChain.builder()
                 .chatLanguageModel(chatLanguageModel)
                 .contentRetriever(retriever)
@@ -82,3 +85,4 @@ public class ProgramChatService {
         return chain.execute(enrichedQuestion);
     }
 }
+
