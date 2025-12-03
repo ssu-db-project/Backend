@@ -167,6 +167,11 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
       return;
     }
     
+    if (usernameCheckStatus === 'error') {
+      toast.error('서버 연결 실패. 네트워크를 확인해주세요.');
+      return;
+    }
+    
     if (usernameCheckStatus !== 'available') {
       toast.error('사용 가능한 아이디를 입력해주세요.');
       return;
@@ -212,31 +217,45 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
       if (response.isSuccess) {
         toast.success('회원가입이 완료되었습니다!');
-        const serverId = (response as any).data?.id || signupData.id;
-        onLoginSuccess(serverId);
-        // 상태 초기화
-        setSignupData({
-          id: '',
-          password: '',
-          passwordConfirm: '',
-          name: '',
-          gender: 'MALE',
-          militaryStatus: false,
-          grade: 1,
-          currentSemester: 1,
-          department: '',
-          enrollmentStatus: 'ENROLLED',
-          residence: '',
-          interestAnnouncementCategoryName: [],
-          interestFieldName: [],
-          interestProgramCategoryName: [],
-        });
-        setUsernameCheckStatus('idle');
-        setPasswordMatchError(false);
-        setSelectedCity('');
-        setSelectedDistrict('');
-        setSelectedInterests([]);
-        onClose();
+        
+        // 회원가입 성공 후 자동 로그인
+        try {
+          const loginResponse = await login({ id: signupData.id, password: signupData.password });
+          
+          if (loginResponse.isSuccess) {
+            const serverId = (loginResponse as any).data?.id || signupData.id;
+            onLoginSuccess(serverId);
+            
+            // 상태 초기화
+            setSignupData({
+              id: '',
+              password: '',
+              passwordConfirm: '',
+              name: '',
+              gender: 'MALE',
+              militaryStatus: false,
+              grade: 1,
+              currentSemester: 1,
+              department: '',
+              enrollmentStatus: 'ENROLLED',
+              residence: '',
+              interestAnnouncementCategoryName: [],
+              interestFieldName: [],
+              interestProgramCategoryName: [],
+            });
+            setUsernameCheckStatus('idle');
+            setPasswordMatchError(false);
+            setSelectedCity('');
+            setSelectedDistrict('');
+            setSelectedInterests([]);
+            onClose();
+          } else {
+            toast.error('회원가입은 성공했으나 로그인에 실패했습니다. 다시 로그인해주세요.');
+          }
+        } catch (loginError) {
+          console.error('자동 로그인 오류:', loginError);
+          toast.error('회원가입은 성공했으나 로그인에 실패했습니다. 다시 로그인해주세요.');
+        }
       } else {
         toast.error(response.message || '회원가입 실패');
       }
@@ -477,12 +496,18 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                         <Label htmlFor="signup-grade">학년 *</Label>
                         <Input
                           id="signup-grade"
-                          type="number"
-                          min="1"
-                          max="4"
-                          placeholder="1"
+                          type="text"
+                          placeholder="예: 1, 2, 3, 4"
                           value={signupData.grade}
-                          onChange={(e) => setSignupData({ ...signupData, grade: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // 빈 값이거나 정수인 경우만 허용
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setSignupData({ ...signupData, grade: value === '' ? 1 : parseInt(value) });
+                            } else {
+                              toast.error('학년은 정수만 입력 가능합니다.');
+                            }
+                          }}
                           required
                         />
                       </div>
@@ -490,12 +515,18 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                         <Label htmlFor="signup-semester">학기 *</Label>
                         <Input
                           id="signup-semester"
-                          type="number"
-                          min="1"
-                          max="8"
-                          placeholder="1"
+                          type="text"
+                          placeholder="예: 1, 2, 3..."
                           value={signupData.currentSemester}
-                          onChange={(e) => setSignupData({ ...signupData, currentSemester: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // 빈 값이거나 정수인 경우만 허용
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setSignupData({ ...signupData, currentSemester: value === '' ? 1 : parseInt(value) });
+                            } else {
+                              toast.error('학기는 정수만 입력 가능합니다.');
+                            }
+                          }}
                           required
                         />
                       </div>

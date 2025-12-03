@@ -40,12 +40,17 @@ langchain:
     base-url: http://localhost:8000
     collection-name: univ_embeddings
 
+
 management:
   endpoints:
     web:
       exposure:
         include: health,info
 
+#ssu:
+#  id: ${SSU_ID}
+#  pw: ${SSU_PW}
+
 ssu:
-  id: ${SSU_ID}
-  pw: ${SSU_PW}
+  id: 20221805
+  pw: 090711aa**

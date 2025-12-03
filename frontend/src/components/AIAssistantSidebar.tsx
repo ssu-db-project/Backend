@@ -97,48 +97,101 @@ export function AIAssistantSidebar({ isOpen, onClose, selectedSupport, assistant
     setIsLoading(true);
 
     try {
-      // 사용자 ID: prop에서 전달받음 (로그인된 사용자 식별자)
-      const activeUserId = userId || 'anonymous';
+      // ✅ 1) userId 체크
+      // if (!userId) {
+        // toast.error('로그인 후 이용 가능한 서비스입니다.');
+        // typeMessage('현재는 로그인 정보가 없어 AI 도우미를 사용할 수 없습니다. 먼저 로그인해 주세요.');
+        // return;
       
+      // }
+      const activeUserId = userId ?? "1234";
+
+      // ✅ 2) activeUserId 사용
       let response;
-      
-      // API 호출 (실제 연결 시 여기서 백엔드 호출)
       if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
-        // 프로그램/비교과 챗봇 API
         response = await askProgramChatbot(activeUserId, userMessage);
       } else {
-        // 공지사항 챗봇 API
         response = await askAnnouncementChatbot(activeUserId, userMessage);
       }
-      
-      // API 응답 처리
+
       let aiMessage = '';
       if (typeof response === 'string') {
         aiMessage = response;
-      } else if (response.data) {
-        aiMessage = response.data;
-      } else if (response.message) {
-        aiMessage = response.message;
+      } else if ((response as any).data) {
+        aiMessage = (response as any).data;
+      } else if ((response as any).message) {
+        aiMessage = (response as any).message;
       } else {
         aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
       }
-      
-      // 타이핑 효과로 메시지 출력
+
       typeMessage(aiMessage);
     } catch (error) {
-      console.error('AI 챗봇 오류:', error);
-      
-      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
-      const fallbackResponse = selectedSupport
-        ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
-        : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
-      
-      typeMessage(fallbackResponse);
-      toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
+        console.error('AI 챗봇 오류:', error);
+        
+        // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+        const fallbackResponse = selectedSupport
+          ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
+          : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
+        
+        typeMessage(fallbackResponse);
+        toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+      } finally {
       setIsLoading(false);
     }
   };
+
+  // const handleSend = async () => {
+  //   if (!input.trim() || isLoading) return;
+
+  //   const userMessage = input.trim();
+  //   setInput('');
+  //   setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+  //   setIsLoading(true);
+
+  //   try {
+  //     // 사용자 ID: prop에서 전달받음 (로그인된 사용자 식별자)
+  //     const activeUserId = userId || 'anonymous';
+      
+  //     let response;
+      
+  //     // API 호출 (실제 연결 시 여기서 백엔드 호출)
+  //     if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
+  //       // 프로그램/비교과 챗봇 API
+  //       response = await askProgramChatbot(activeUserId, userMessage);
+  //     } else {
+  //       // 공지사항 챗봇 API
+  //       response = await askAnnouncementChatbot(activeUserId, userMessage);
+  //     }
+      
+  //     // API 응답 처리
+  //     let aiMessage = '';
+  //     if (typeof response === 'string') {
+  //       aiMessage = response;
+  //     } else if (response.data) {
+  //       aiMessage = response.data;
+  //     } else if (response.message) {
+  //       aiMessage = response.message;
+  //     } else {
+  //       aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
+  //     }
+      
+  //     // 타이핑 효과로 메시지 출력
+  //     typeMessage(aiMessage);
+  //   } catch (error) {
+  //     console.error('AI 챗봇 오류:', error);
+      
+  //     // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+  //     const fallbackResponse = selectedSupport
+  //       ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
+  //       : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
+      
+  //     typeMessage(fallbackResponse);
+  //     toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div

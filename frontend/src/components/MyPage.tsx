@@ -21,6 +21,7 @@ interface MyPageProps {
 }
 
 const interestOptions = [
+  // 공지 카테고리
   '학사',
   '장학',
   '국제교류',
@@ -28,21 +29,32 @@ const interestOptions = [
   '채용',
   '봉사',
   '기타',
-  '비교과-상담/멘토링/코칭',
-  '비교과-공모전/경진대회',
-  '비교과-특강/워크숍',
-];
-
-const colleges = [
-  '인문대학',
-  '자연과학대학',
-  '법과대학',
-  '사회과학대학',
-  '경제통상대학',
-  '경영대학',
-  'IT대학',
-  '공과대학',
-  '베어드학부',
+  // 키워드
+  '데이터',
+  '반도체',
+  '통신',
+  '방산',
+  '자동차',
+  // 비교과 프로그램
+  '상담/멘토링/코칭',
+  '공모전/경진대회',
+  '특강/워크숍',
+  '소모임/동아리',
+  '국내/외 현장실습, 인턴십',
+  '공연, 전시회/견학, 답사',
+  '자격증/어학시험',
+  '서포터즈/홍보대사',
+  '국내/외 봉사활동',
+  '발표(졸업/논문)',
+  '국내/외 교환학생 및 연수',
+  '전공탐색프로그램',
+  '진로탐색프로그램',
+  '채용설명회/채용상담',
+  '공공인재양성반',
+  '독서및토론',
+  '창업',
+  'AI 비교과',
+  '졸업생 특화 프로그램',
 ];
 
 const provinces = {
@@ -123,7 +135,6 @@ export function MyPage({
   // Refs for scrolling to error fields
   const genderRef = useRef<HTMLDivElement>(null);
   const militaryRef = useRef<HTMLDivElement>(null);
-  const collegeRef = useRef<HTMLDivElement>(null);
   const departmentRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const gradeRef = useRef<HTMLDivElement>(null);
@@ -160,16 +171,16 @@ export function MyPage({
   };
 
   const handleSave = () => {
-    // Validate fields
+    // Validate fields (회원가입과 동일한 필수 필드)
     const newErrors: Record<string, boolean> = {};
-    if (!profile.gender) newErrors.gender = true;
-    if (!profile.hasMilitary) newErrors.military = true;
-    if (!profile.college) newErrors.college = true;
+    // 학과만 필수
     if (!profile.department) newErrors.department = true;
+    // 재학 상태 필수
     if (!profile.status) newErrors.status = true;
+    // 재학/휴학인 경우 학년, 학기 필수
     if (profile.status && profile.status !== 'graduated' && !profile.grade) newErrors.grade = true;
     if (profile.status && profile.status !== 'graduated' && !profile.semester) newErrors.semester = true;
-    if (!profile.location) newErrors.location = true;
+    // 관심 분야 최소 1개
     if (profile.interests.length < 1) newErrors.interests = true;
 
     if (Object.keys(newErrors).length > 0) {
@@ -179,7 +190,6 @@ export function MyPage({
       const ref = {
         gender: genderRef,
         military: militaryRef,
-        college: collegeRef,
         department: departmentRef,
         status: statusRef,
         grade: gradeRef,
@@ -194,7 +204,6 @@ export function MyPage({
     }
 
     onUpdateProfile(profile);
-    toast.success('프로필이 업데이트되었습니다');
   };
 
   return (
@@ -305,26 +314,6 @@ export function MyPage({
                   <div className="space-y-4">
                     <h3 className="text-blue-600 pb-2 border-b">학적 정보</h3>
 
-                    <div className="space-y-2" ref={collegeRef}>
-                      <Label htmlFor="college">단과대학</Label>
-                      <Select
-                        value={profile.college}
-                        onValueChange={(value) => setProfile({ ...profile, college: value })}
-                      >
-                        <SelectTrigger className={errors.college ? 'border-red-500' : ''}>
-                          <SelectValue placeholder="단과대학 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {colleges.map((college) => (
-                            <SelectItem key={college} value={college}>
-                              {college}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.college && <p className="text-sm text-red-500">단과대학을 선택하세요</p>}
-                    </div>
-
                     <div className="space-y-2" ref={departmentRef}>
                       <Label htmlFor="department">학과</Label>
                       <Input
@@ -367,46 +356,44 @@ export function MyPage({
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2" ref={gradeRef}>
                           <Label htmlFor="grade">학년</Label>
-                          <Select
+                          <Input
+                            id="grade"
+                            type="text"
+                            placeholder="예: 1, 2, 3, 4"
                             value={profile.grade || ''}
-                            onValueChange={(value) => setProfile({ ...profile, grade: value })}
-                          >
-                            <SelectTrigger className={errors.grade ? 'border-red-500' : ''}>
-                              <SelectValue placeholder="학년 선택" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1학년</SelectItem>
-                              <SelectItem value="2">2학년</SelectItem>
-                              <SelectItem value="3">3학년</SelectItem>
-                              <SelectItem value="4">4학년</SelectItem>
-                              <SelectItem value="graduate">대학원</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.grade && <p className="text-sm text-red-500">학년을 선택하세요</p>}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // 빈 값이거나 정수인 경우만 허용
+                              if (value === '' || /^\d+$/.test(value)) {
+                                setProfile({ ...profile, grade: value });
+                              } else {
+                                toast.error('학년은 정수만 입력 가능합니다.');
+                              }
+                            }}
+                            className={errors.grade ? 'border-red-500' : ''}
+                          />
+                          {errors.grade && <p className="text-sm text-red-500">학년을 입력하세요</p>}
                         </div>
 
                         <div className="space-y-2" ref={semesterRef}>
                           <Label htmlFor="semester">학기 (전체 이수 학기)</Label>
-                          <Select
+                          <Input
+                            id="semester"
+                            type="text"
+                            placeholder="예: 1, 2, 3..."
                             value={profile.semester || ''}
-                            onValueChange={(value) => setProfile({ ...profile, semester: value })}
-                          >
-                            <SelectTrigger className={errors.semester ? 'border-red-500' : ''}>
-                              <SelectValue placeholder="학기 선택" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1학기</SelectItem>
-                              <SelectItem value="2">2학기</SelectItem>
-                              <SelectItem value="3">3학기</SelectItem>
-                              <SelectItem value="4">4학기</SelectItem>
-                              <SelectItem value="5">5학기</SelectItem>
-                              <SelectItem value="6">6학기</SelectItem>
-                              <SelectItem value="7">7학기</SelectItem>
-                              <SelectItem value="8">8학기</SelectItem>
-                              <SelectItem value="9+">9학기 이상</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.semester && <p className="text-sm text-red-500">학기를 선택하세요</p>}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // 빈 값이거나 정수인 경우만 허용
+                              if (value === '' || /^\d+$/.test(value)) {
+                                setProfile({ ...profile, semester: value });
+                              } else {
+                                toast.error('학기는 정수만 입력 가능합니다.');
+                              }
+                            }}
+                            className={errors.semester ? 'border-red-500' : ''}
+                          />
+                          {errors.semester && <p className="text-sm text-red-500">학기를 입력하세요</p>}
                         </div>
                       </div>
                     )}
