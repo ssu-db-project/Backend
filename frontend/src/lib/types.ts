@@ -14,7 +14,6 @@ export interface UserProfile {
   hasMilitary: string;     // 군필 여부: 'yes' | 'no' | 'exempt' | 'notApplicable'
   grade: string | null;    // 학년: '1'~'4' | 'graduate' (졸업생 null)
   department: string;      // 학과
-  college: string;         // 단과대학
   status: string;          // 재학 상태: 'enrolled' | 'leave' | 'graduated'
   semester: string | null; // 학기 (졸업생 null)
   location: string;        // 거주지: '시/도 시/군/구'

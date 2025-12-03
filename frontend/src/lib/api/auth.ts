@@ -96,7 +96,12 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
 
     // 200 OK - 회원가입 성공
     if (response.ok) {
-      return await response.json();
+      const data: ApiResponse = await response.json();
+      return {
+        isSuccess: data.success,
+        message: data.message,
+        data: data.data
+      };
     }
 
     // 400 Bad Request - 필수 값 누락
@@ -111,7 +116,12 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
       throw new Error(errorData?.message || `회원가입 실패: ${response.statusText}`);
     }
 
-    return await response.json();
+    const data: ApiResponse = await response.json();
+    return {
+      isSuccess: data.success,
+      message: data.message,
+      data: data.data
+    };
   } catch (error) {
     console.error('회원가입 오류:', error);
     throw error;
@@ -140,7 +150,12 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
 
     // 200 OK - 로그인 성공
     if (response.ok) {
-      return await response.json();
+      const data: ApiResponse = await response.json();
+      return {
+        isSuccess: data.success,
+        message: data.message,
+        data: data.data
+      };
     }
 
     // 401 Unauthorized - 로그인 실패
@@ -155,7 +170,12 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
       throw new Error(errorData?.message || `로그인 실패: ${response.statusText}`);
     }
 
-    return await response.json();
+    const data: ApiResponse = await response.json();
+    return {
+      isSuccess: data.success,
+      message: data.message,
+      data: data.data
+    };
   } catch (error) {
     console.error('로그인 오류:', error);
     throw error;
@@ -245,7 +265,12 @@ export async function updateUserProfile(profile: UpdateProfileRequest): Promise<
 
     // 200 OK - 수정 성공
     if (response.ok) {
-      return await response.json();
+      // 백엔드가 평문 문자열을 반환하므로 텍스트로 읽음
+      const message = await response.text();
+      return {
+        isSuccess: true,
+        message: message || '회원 정보가 업데이트되었습니다.'
+      };
     }
 
     // 400 Bad Request - 유효하지 않은 필드
@@ -266,7 +291,10 @@ export async function updateUserProfile(profile: UpdateProfileRequest): Promise<
       throw new Error(errorData?.message || `프로필 업데이트 실패: ${response.statusText}`);
     }
 
-    return await response.json();
+    return {
+      isSuccess: true,
+      message: '회원 정보가 업데이트되었습니다.'
+    };
   } catch (error) {
     console.error('프로필 업데이트 오류:', error);
     throw error;
@@ -355,7 +383,12 @@ export async function updateUserInterests(interests: UpdateInterestsRequest): Pr
 
     // 200 OK - 수정 성공
     if (response.ok) {
-      return await response.json();
+      // 백엔드가 평문 문자열을 반환하므로 텍스트로 읽음
+      const message = await response.text();
+      return {
+        isSuccess: true,
+        message: message || '관심 분야가 업데이트되었습니다.'
+      };
     }
 
     // 400 Bad Request - 유효하지 않은 category_id
@@ -376,7 +409,10 @@ export async function updateUserInterests(interests: UpdateInterestsRequest): Pr
       throw new Error(errorData?.message || `관심분야 업데이트 실패: ${response.statusText}`);
     }
 
-    return await response.json();
+    return {
+      isSuccess: true,
+      message: '관심 분야가 업데이트되었습니다.'
+    };
   } catch (error) {
     console.error('관심분야 업데이트 오류:', error);
     throw error;
