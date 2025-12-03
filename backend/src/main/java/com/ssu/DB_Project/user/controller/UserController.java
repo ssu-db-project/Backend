@@ -29,6 +29,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserRegisterResponse>> register(@RequestBody UserRegisterRequest request) {
         UserRegisterResponse response = userService.registerUser(request);
@@ -104,6 +106,15 @@ public class UserController {
         // 세션에 저장된 객체가 User라고 가정
         User loginUser = (User) session.getAttribute("loginUser");
         return loginUser.getId();
+    }
+
+    @GetMapping("/check-duplicate/{userId}")
+    public ResponseEntity<ApiResponse<Boolean>> checkDuplicateId(@PathVariable String userId) {
+        if (userRepository.existsById(userId)) {
+            return ResponseEntity.ok(ApiResponse.success("이미 사용 중인 아이디입니다.", true));
+        }
+
+        return ResponseEntity.ok(ApiResponse.success("사용 가능한 아이디입니다.", false));
     }
 
 }
