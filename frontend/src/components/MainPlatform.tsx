@@ -5,12 +5,8 @@ import { AIAssistantSidebar } from './AIAssistantSidebar';
 import { MyPage } from './MyPage';
 import { Button } from './ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { Sparkles, LogOut, User, Filter, School } from 'lucide-react';
+import { Sparkles, LogOut, User, School, Filter } from 'lucide-react';
 import { UserProfile } from './UserProfileDialog';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { getInterestAnnouncements, getInterestPrograms, searchAnnouncementsAndPrograms } from '../lib/api/notices';
 import { toast } from 'sonner';
 
@@ -37,12 +33,7 @@ export function MainPlatform({
   const [generalAiOpen, setGeneralAiOpen] = useState(false); // 일반 AI 도우미
   const [supathonAiOpen, setSupathonAiOpen] = useState(false); // 슈패스 AI 도우미
   const [selectedSupport, setSelectedSupport] = useState<SupportInfo | null>(null);
-  const [advancedSearchOpen, setAdvancedSearchOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'main' | 'mypage'>('main');
-  
-  // Advanced search filters
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [eligibilityFilter, setEligibilityFilter] = useState('');
 
   const interestCategories = ['전체', ...userProfile.interests, '추천'];
 
@@ -63,7 +54,7 @@ export function MainPlatform({
       summary: n.summary || (n.content ? n.content.substring(0, 100) + '...' : ''),
       description: n.content || n.summary || '',
       fullText: n.content || n.summary || '',
-      sourceUrl: n.url || '',
+      sourceUrl: n.url || n.originalUrl || n.link || '',
       category: n.categoryName || n.category || '공지사항',
       eligibility: n.departmentName || '-',
       amount: n.status || '-',
@@ -78,7 +69,7 @@ export function MainPlatform({
       summary: p.subtitle || (p.content ? p.content.substring(0, 100) + '...' : ''),
       description: p.content || p.subtitle || '',
       fullText: p.content || p.subtitle || '',
-      sourceUrl: p.originalUrl || '',
+      sourceUrl: p.originalUrl || p.url || p.link || '',
       category: p.categoryName || '비교과',
       eligibility: p.targetAudience || '-',
       amount: p.capacity ? `정원 ${p.capacity}` : '-',
@@ -104,29 +95,27 @@ export function MainPlatform({
     if (userProfile) loadInitialSupports();
   }, [userProfile]);
 
-  // Keyword search: when user types a query, call search API (length >= 2)
+  // Keyword search: 전체 DB 탭에서만 검색 (길이 >= 2)
   useEffect(() => {
     let mounted = true;
     async function doSearch() {
-      if (!searchQuery || searchQuery.trim().length < 2) {
-        // restore interest-based supports when query cleared
-        if (userProfile) {
-          try {
-            await fetchInterestSupports();
-          } catch (_) {
-            if (mounted) setSupports([]);
-          }
-        }
+      if (mainTab !== 'all-db') {
         return;
       }
 
       try {
+        const keyword = (searchQuery || '').trim();
+        if (keyword.length < 1) {
+          // 검색어가 없으면 검색 호출을 하지 않고 리스트를 비운다
+          setSupports([]);
+          return;
+        }
         // 공지/비교과 통합 검색 API 호출
-        const searchResults = await searchAnnouncementsAndPrograms(searchQuery.trim());
+        const searchResults = await searchAnnouncementsAndPrograms(keyword);
         
         // SearchResultDto[] → SupportInfo[] 변환
-          const mapped: SupportInfo[] = searchResults.map((result) => ({
-            id: result.id,
+        const mapped: SupportInfo[] = searchResults.map((result) => ({
+          id: result.id,
           title: result.title || '',
           summary: result.sourceContent ? result.sourceContent.substring(0, 100) + '...' : '',
           description: result.sourceContent || '',
@@ -158,7 +147,23 @@ export function MainPlatform({
 
     doSearch();
     return () => { mounted = false; };
-  }, [searchQuery, userProfile]);
+  }, [searchQuery, mainTab, userProfile]);
+
+  // 탭을 맞춤형 추천으로 전환할 때 관심 데이터 다시 로드
+  useEffect(() => {
+    async function reloadInterestSupports() {
+      try {
+        await fetchInterestSupports();
+      } catch (error) {
+        console.error('관심 공지사항 로드 오류:', error);
+        setSupports([]);
+      }
+    }
+
+    if (mainTab === 'interest-based' && userProfile) {
+      reloadInterestSupports();
+    }
+  }, [mainTab, userProfile]);
 
   // Filter logic for interest-based tab
   const getInterestBasedSupports = () => {
@@ -177,12 +182,6 @@ export function MainPlatform({
       const tagsLower = tags.map((t) => (t || '').toLowerCase());
       const categoryLower = category.toLowerCase();
 
-      const matchesSearch =
-        searchQuery === '' ||
-        title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        tags.some(tag => (tag || '').toLowerCase().includes(searchQuery.toLowerCase()));
-
       const matchesInterest =
         normalizedInterests.length === 0 ||
         normalizedInterests.some((interest) =>
@@ -194,13 +193,13 @@ export function MainPlatform({
       
       if (selectedCategory === '전체') {
         // Show all notices that match user interests
-        return matchesSearch && matchesInterest;
+        return matchesInterest;
       } else if (selectedCategory === '추천') {
         // Show recommended notices based on user profile
-        return matchesSearch && matchesInterest;
+        return matchesInterest;
       } else {
         // Show notices for specific interest
-        return matchesSearch && category === selectedCategory;
+        return category === selectedCategory;
       }
     });
   };
@@ -217,11 +216,7 @@ export function MainPlatform({
         title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tags.some(tag => (tag || '').toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      const matchesCategory = !categoryFilter || categoryFilter === '전체' || support.category === categoryFilter;
-      const matchesEligibility = !eligibilityFilter || support.eligibility.toLowerCase().includes(eligibilityFilter.toLowerCase());
-
-      return matchesSearch && matchesCategory && matchesEligibility;
+      return matchesSearch;
     });
   };
 
@@ -323,43 +318,39 @@ export function MainPlatform({
             setMainTab(value);
             setSelectedCategory('전체');
             setSearchQuery('');
-            setCategoryFilter('');
-            setEligibilityFilter('');
           }}>
-            <TabsList className="w-full justify-start border-0 bg-transparent h-12 rounded-none p-0">
-              <TabsTrigger 
-                value="interest-based" 
-                className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-6"
-              >
-                <Sparkles className="w-4 h-4" />
-                맞춤형 추천
-              </TabsTrigger>
-              <TabsTrigger 
-                value="all-db" 
-                className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-6"
-              >
-                <Filter className="w-4 h-4" />
-                전체 공지사항
-              </TabsTrigger>
+          <TabsList className="w-full justify-start border-0 bg-transparent h-12 rounded-none p-0">
+            <TabsTrigger 
+              value="interest-based" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-6"
+            >
+              <Sparkles className="w-4 h-4" />
+              맞춤형 추천
+            </TabsTrigger>
+            <TabsTrigger 
+              value="all-db" 
+              className="gap-2 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-6"
+            >
+              <Filter className="w-4 h-4" />
+              전체 공지사항
+            </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </div>
 
-      {/* Search Bar Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder={
-              mainTab === 'interest-based' 
-                ? "💡 관심 분야 기반 맞춤형 공지사항 검색..." 
-                : "🔍 전체 공지사항 검색..."
-            }
-          />
+      {/* Search Bar Section (전체 공지 탭에서만) */}
+      {mainTab === 'all-db' && (
+        <div className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="🔍 전체 공지사항 검색..."
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -427,65 +418,6 @@ export function MainPlatform({
         {/* All DB Tab Content */}
         {mainTab === 'all-db' && (
           <div>
-            {/* Advanced Search */}
-            <Collapsible open={advancedSearchOpen} onOpenChange={setAdvancedSearchOpen}>
-              <div className="mb-6">
-                <CollapsibleTrigger asChild>
-                  <Button variant="outline" className="w-full sm:w-auto gap-2">
-                    <Filter className="w-4 h-4" />
-                    세부 검색 {advancedSearchOpen ? '접기' : '펼치기'}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-4">
-                  <div className="bg-white p-6 rounded-lg border space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="category-filter">분야</Label>
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                          <SelectTrigger id="category-filter">
-                            <SelectValue placeholder="전체" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="전체">전체</SelectItem>
-                            <SelectItem value="학사">학사</SelectItem>
-                            <SelectItem value="장학">장학</SelectItem>
-                            <SelectItem value="국제교류">국제교류</SelectItem>
-                            <SelectItem value="외국인유학생">외국인유학생</SelectItem>
-                            <SelectItem value="채용">채용</SelectItem>
-                            <SelectItem value="봉사">봉사</SelectItem>
-                            <SelectItem value="기타">기타</SelectItem>
-                            <SelectItem value="비교과-상담/멘토링/코칭">비교과-상담/멘토링/코칭</SelectItem>
-                            <SelectItem value="비교과-공모전/경진대회">비교과-공모전/경진대회</SelectItem>
-                            <SelectItem value="비교과-특강/워크숍">비교과-특강/워크숍</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="eligibility-filter">대상 조건</Label>
-                        <Input
-                          id="eligibility-filter"
-                          placeholder="예: 재학생, 졸업예정자"
-                          value={eligibilityFilter}
-                          onChange={(e) => setEligibilityFilter(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setCategoryFilter('');
-                          setEligibilityFilter('');
-                        }}
-                      >
-                        필터 초기화
-                      </Button>
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-
             {/* Results Count */}
             <div className="mb-4">
               <p className="text-gray-600">

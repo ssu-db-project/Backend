@@ -35,9 +35,15 @@ public class BookmarkService {
                 throw new IllegalArgumentException("이미 북마크한 공지사항입니다");
             }
 
+            /*
             Announcement announcement = announcementRepository.findById(
                     String.valueOf(announcementId))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다"));
+
+             */
+
+            Announcement announcement = announcementRepository.findById(announcementId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다"));
 
             Bookmark bookmark = Bookmark.builder()
                 .user(User.builder().id(userId).build())

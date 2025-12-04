@@ -14,6 +14,8 @@ public class SearchResultDto {
     private String sourceContent;
     private double similarity;
 
+    private String originalUrl;
+
     public static SearchResultDto fromAnnouncement(Announcement a, double score) {
         return SearchResultDto.builder()
                 .id(String.valueOf(a.getId()))
@@ -21,6 +23,7 @@ public class SearchResultDto {
                 .type("announcement")
                 .sourceContent(a.getContent())
                 .similarity(score)
+                .originalUrl(a.getUrl())
                 .build();
     }
 
@@ -31,6 +34,7 @@ public class SearchResultDto {
                 .type("program")
                 .sourceContent(p.getContent())
                 .similarity(score)
+                .originalUrl(p.getOriginalUrl())
                 .build();
     }
 }

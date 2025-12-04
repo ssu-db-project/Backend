@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AnnouncementRepository extends JpaRepository<Announcement, String> {
+public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
     List<Announcement> findByCategoryIdInOrderByPostedAtDesc(Set<String> categoryIds);
     List<Announcement> findTop10ByDepartmentNameOrderByPostedAtDesc(String departmentName);
     List<Announcement> findByCategory_NameOrderByPostedAtDesc(String categoryName);

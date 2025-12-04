@@ -122,8 +122,16 @@ public class AnnouncementService {
     }
 
     public AnnouncementResponse getAnnouncement(Long announcementId) {
+        /*
         Announcement announcement = announcementRepository.findById(String.valueOf(announcementId))
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다"));
+
+         */
+
+        Announcement announcement = announcementRepository.findById(announcementId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 공지사항입니다"));
+
+
         return AnnouncementResponse.from(announcement);
     }
 

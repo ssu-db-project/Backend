@@ -63,8 +63,20 @@ public class SearchService {
             String type = meta.get("type");
 
             if("announcement".equals(type)) {
-                announcementRepository.findById(meta.get("announcement_id"))
+                String annIdString = meta.get("announcement_id");
+
+                try {
+                    Long annId = Long.parseLong(annIdString); // ⭐️ String을 Long으로 변환
+                    announcementRepository.findById(annId)
+                            .ifPresent(a -> results.add(SearchResultDto.fromAnnouncement(a, m.score())));
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid Announcement ID in metadata: " + annIdString);
+                }
+
+                /*announcementRepository.findById(meta.get("announcement_id"))
                         .ifPresent(a -> results.add(SearchResultDto.fromAnnouncement(a, m.score())));
+
+                 */
             }
 
             if("program".equals(type)) {
