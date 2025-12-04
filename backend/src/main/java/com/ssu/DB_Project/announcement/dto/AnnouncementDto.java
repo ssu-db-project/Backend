@@ -20,6 +20,8 @@ public class AnnouncementDto {
 
     private String status;
     private String postedAt;
+    private String url;
+
     public static AnnouncementDto from(Announcement announcement) {
         return AnnouncementDto.builder()
             .id(announcement.getId())
@@ -32,6 +34,7 @@ public class AnnouncementDto {
             .departmentName(announcement.getDepartmentName())
             .status(announcement.getStatus())
             .postedAt(announcement.getPostedAt().toString())
+                .url(announcement.getUrl())
             .build();
     }
 }

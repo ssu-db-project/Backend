@@ -89,6 +89,7 @@ public class UserController {
         List<AnnouncementDto> response = userService.getAnnouncementsByUserInterest(userId,category);
         return ResponseEntity.ok(ApiResponse.success("사용자의 관심 공지사항을 조회합니다.",response));
     }
+
     @GetMapping("/interest-programs")
     public ResponseEntity<ApiResponse<List<ProgramDto>>> getInterestPrograms(
         HttpServletRequest request, @RequestParam(value = "category", required = false) String category) {
