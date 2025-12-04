@@ -1,3 +1,18 @@
+// 백엔드 인증 응답 data 타입
+export interface AuthUserData {
+  id: string;
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  militaryStatus: boolean;
+  grade: number;
+  currentSemester: number;
+  department: string;
+  enrollmentStatus: 'ENROLLED' | 'LEAVE' | 'GRADUATED';
+  residence: string;
+  interestAnnouncementCategories: string[];
+  interestFields: string[];
+  interestProgramCategories: string[];
+}
 /**
  * 숭실대학교 공지사항 플랫폼 - 타입 정의
  * 
@@ -14,7 +29,6 @@ export interface UserProfile {
   hasMilitary: string;     // 군필 여부: 'yes' | 'no' | 'exempt' | 'notApplicable'
   grade: string | null;    // 학년: '1'~'4' | 'graduate' (졸업생 null)
   department: string;      // 학과
-  college: string;         // 단과대학
   status: string;          // 재학 상태: 'enrolled' | 'leave' | 'graduated'
   semester: string | null; // 학기 (졸업생 null)
   location: string;        // 거주지: '시/도 시/군/구'

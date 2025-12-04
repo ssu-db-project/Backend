@@ -13,13 +13,17 @@ public class CrawlerTest implements CommandLineRunner {
     @Autowired
     private SsuAnnouncement ssuAnnouncement;
 
+
     @Override
     public void run(String... args) throws Exception {
-//        System.out.println("=========== [TEST] 크롤링 테스트 시작 ===========");
-//
-//        // 여기서 크롤링 메서드 강제 실행
-//        ssuPath.crawl();
-//        ssuAnnouncement.crawl();
-//        System.out.println("=========== [TEST] 크롤링 테스트 종료 ===========");
+
+        System.out.println("=========== [TEST] 크롤링 테스트 시작 ===========");
+
+        // 여기서 크롤링 메서드 강제 실행
+        ssuPath.crawl();
+        ssuAnnouncement.crawl();
+        System.out.println("=========== [TEST] 크롤링 테스트 종료 ===========");
+
+
     }
 }

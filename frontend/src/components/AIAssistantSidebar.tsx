@@ -97,48 +97,88 @@ export function AIAssistantSidebar({ isOpen, onClose, selectedSupport, assistant
     setIsLoading(true);
 
     try {
-      // 사용자 ID: prop에서 전달받음 (로그인된 사용자 식별자)
-      const activeUserId = userId || 'anonymous';
-      
-      let response;
-      
-      // API 호출 (실제 연결 시 여기서 백엔드 호출)
-      if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
-        // 프로그램/비교과 챗봇 API
-        response = await askProgramChatbot(activeUserId, userMessage);
-      } else {
-        // 공지사항 챗봇 API
-        response = await askAnnouncementChatbot(activeUserId, userMessage);
+      // 로그인된 사용자 식별자가 없으면 호출을 막는다
+      const activeUserId = String(userId || '');
+      if (!activeUserId) {
+        toast.error('로그인 정보가 없습니다. 로그인 후 이용해주세요.');
+        setIsLoading(false);
+        return;
       }
-      
-      // API 응답 처리
-      let aiMessage = '';
-      if (typeof response === 'string') {
-        aiMessage = response;
-      } else if (response.data) {
-        aiMessage = response.data;
-      } else if (response.message) {
-        aiMessage = response.message;
-      } else {
-        aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
-      }
-      
+
+      // supathon 타입이거나 program 태그가 있으면 비교과 챗봇으로 라우팅
+      const isProgramChat =
+        assistantType === 'supathon' ||
+        (selectedSupport?.tags || []).includes('program');
+
+      const response = isProgramChat
+        ? await askProgramChatbot(activeUserId, userMessage)
+        : await askAnnouncementChatbot(activeUserId, userMessage);
+
+      // API 응답은 문자열 기반으로 처리
+      const aiMessage = typeof response === 'string' ? response : '죄송합니다. 응답을 받지 못했습니다.';
+
       // 타이핑 효과로 메시지 출력
       typeMessage(aiMessage);
     } catch (error) {
       console.error('AI 챗봇 오류:', error);
-      
-      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
-      const fallbackResponse = selectedSupport
-        ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
-        : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
-      
-      typeMessage(fallbackResponse);
-      toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+      typeMessage('죄송합니다. AI 서버에서 응답을 받지 못했습니다. 다시 시도해주세요.');
+      toast.error('AI 응답 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // const handleSend = async () => {
+  //   if (!input.trim() || isLoading) return;
+
+  //   const userMessage = input.trim();
+  //   setInput('');
+  //   setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+  //   setIsLoading(true);
+
+  //   try {
+  //     // 사용자 ID: prop에서 전달받음 (로그인된 사용자 식별자)
+  //     const activeUserId = userId || 'anonymous';
+      
+  //     let response;
+      
+  //     // API 호출 (실제 연결 시 여기서 백엔드 호출)
+  //     if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
+  //       // 프로그램/비교과 챗봇 API
+  //       response = await askProgramChatbot(activeUserId, userMessage);
+  //     } else {
+  //       // 공지사항 챗봇 API
+  //       response = await askAnnouncementChatbot(activeUserId, userMessage);
+  //     }
+      
+  //     // API 응답 처리
+  //     let aiMessage = '';
+  //     if (typeof response === 'string') {
+  //       aiMessage = response;
+  //     } else if (response.data) {
+  //       aiMessage = response.data;
+  //     } else if (response.message) {
+  //       aiMessage = response.message;
+  //     } else {
+  //       aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
+  //     }
+      
+  //     // 타이핑 효과로 메시지 출력
+  //     typeMessage(aiMessage);
+  //   } catch (error) {
+  //     console.error('AI 챗봇 오류:', error);
+      
+  //     // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+  //     const fallbackResponse = selectedSupport
+  //       ? `"${selectedSupport.title}"에 대해 질문하셨네요.\n\n✓ 지원 대상: ${selectedSupport.eligibility}\n✓ 지원 금액: ${selectedSupport.amount}\n✓ 신청 기한: ${selectedSupport.deadline}\n✓ 담당 기관: ${selectedSupport.agency}\n\n구체적으로 어떤 부분이 궁금하신가요? 신청 방법, 필요 서류, 자격 요건 등에 대해 더 자세히 안내해드릴 수 있습니다.`
+  //       : '현재 AI 서비스가 준비 중입니다. 잠시 후 다시 시도해주세요.';
+      
+  //     typeMessage(fallbackResponse);
+  //     toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div

@@ -1,4 +1,27 @@
 /**
+ * 인기 검색어 조회
+ * GET /api/trending-keywords
+ * @returns [{ keyword: string, count: number }[]]
+ */
+export async function getTrendingKeywords(): Promise<{ keyword: string; count: number }[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/trending-keywords`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error('인기 검색어 조회 실패');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('인기 검색어 조회 오류:', error);
+    return [];
+  }
+}
+/**
  * 공지사항/프로그램 조회 API 서비스
  * 
  * 백엔드 API 명세:
@@ -96,6 +119,59 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
   success: boolean;
+}
+
+// RAG 정제 요청/응답 타입
+export interface AnnouncementProcessRequest {
+  originalText: string;
+  url: string;
+  categoryName: string;
+  departmentName: string;
+}
+
+export interface AnnouncementProcessResponse {
+  createdAt: string;
+  id: string;
+  source?: string;
+  originalId?: string;
+  category: { id: string; name: string };
+  department?: { id?: string; name?: string };
+  departmentName?: string;
+  title: string;
+  content: string;
+  summary: string;
+  url: string;
+  postedAt: string;
+  status: string;
+  files: FileDto[] | [];
+}
+
+export interface ProgramProcessRequest {
+  originalText: string;
+  url: string;
+  categoryName: string;
+  organizationName: string;
+}
+
+export interface ProgramProcessResponse {
+  id: string;
+  title: string;
+  subtitle?: string;
+  category: { id: string; name: string };
+  organizationName: string;
+  operationMethod: string;
+  applyStartAt: string;
+  applyEndAt: string;
+  programStartAt: string;
+  programEndAt: string;
+  location: string;
+  targetAudience: string;
+  capacity: number;
+  content: string;
+  originalUrl: string;
+  createdAt: string;
+  inProgress?: boolean;
+  applyPeriod?: boolean;
 }
 
 /**
@@ -280,15 +356,98 @@ export async function searchAnnouncementsAndPrograms(query: string): Promise<Sea
       body: JSON.stringify({ query }),
     });
 
+    const text = await response.text();
+    let payload: any = text ? JSON.parse(text) : [];
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `검색 실패: ${response.statusText}`);
+      const message =
+        (payload as any)?.message ||
+        response.statusText ||
+        '검색 실패: 서버 오류';
+      throw new Error(message);
     }
 
-    // 응답이 List 형태로 직접 반환됨
-    return await response.json();
+    // 응답이 JSON 배열(List<SearchResultDto>) 형태로 바로 반환됨
+    if (Array.isArray(payload)) {
+      return payload as SearchResultDto[];
+    }
+
+    // 혹시 ApiResponse 래퍼 형태로 올 경우를 대비
+    if (Array.isArray((payload as any)?.data)) {
+      return (payload as any).data as SearchResultDto[];
+    }
+
+    throw new Error('검색 결과 형식이 올바르지 않습니다.');
   } catch (error) {
     console.error('검색 오류:', error);
     throw error;
+  }
+}
+
+/**
+ * 공지 원문 RAG 정제 및 저장
+ * POST /api/announcement/process
+ */
+export async function processAnnouncement(request: AnnouncementProcessRequest): Promise<AnnouncementProcessResponse> {
+  const response = await fetch(`${API_BASE_URL}/announcement/process`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    let message = `공지 정제 실패: ${response.statusText}`;
+    try {
+      const parsed = text ? JSON.parse(text) : null;
+      if (parsed?.message) message = parsed.message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+
+  try {
+    return text ? (JSON.parse(text) as AnnouncementProcessResponse) : ({} as AnnouncementProcessResponse);
+  } catch (err) {
+    console.error('공지 정제 응답 파싱 실패:', err);
+    throw new Error('공지 정제 응답 형식 오류');
+  }
+}
+
+/**
+ * 비교과 원문 RAG 정제 및 저장
+ * POST /api/program/process
+ */
+export async function processProgram(request: ProgramProcessRequest): Promise<ProgramProcessResponse> {
+  const response = await fetch(`${API_BASE_URL}/program/process`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(request),
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    let message = `비교과 정제 실패: ${response.statusText}`;
+    try {
+      const parsed = text ? JSON.parse(text) : null;
+      if (parsed?.message) message = parsed.message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+
+  try {
+    return text ? (JSON.parse(text) as ProgramProcessResponse) : ({} as ProgramProcessResponse);
+  } catch (err) {
+    console.error('비교과 정제 응답 파싱 실패:', err);
+    throw new Error('비교과 정제 응답 형식 오류');
   }
 }

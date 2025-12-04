@@ -3,10 +3,10 @@ import { LandingPage } from './components/LandingPage';
 import { MainPlatform } from './components/MainPlatform';
 import { LoginDialog } from './components/LoginDialog';
 import { Toaster } from './components/ui/sonner';
-import { UserProfile } from './lib/types';
+import { UserProfile, AuthUserData } from './lib/types';
 import { toggleBookmark, getBookmarks } from './lib/api/bookmark';
 import { toast } from 'sonner';
-import { logout as apiLogout, updateUserProfile as apiUpdateUserProfile } from './lib/api/auth';
+import { logout as apiLogout, updateUserProfile as apiUpdateUserProfile, getUserProfile, getUserInterests } from './lib/api/auth';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,25 +19,69 @@ export default function App() {
     setShowLoginDialog(true);
   };
 
-  const handleLoginSuccess = async (username: string) => {
-    setCurrentUsername(username);
+  const handleLoginSuccess = async (user: AuthUserData) => {
+    setCurrentUsername(user.id);
+
+    // 서버 응답에 일부 필드가 없을 경우 프로필/관심사를 보강
+    const needsFetch =
+      !user.name ||
+      !user.department ||
+      (user.interestAnnouncementCategories?.length ?? 0) +
+        (user.interestFields?.length ?? 0) +
+        (user.interestProgramCategories?.length ?? 0) === 0;
+
+    let enrichedUser = user;
+
+    if (needsFetch) {
+      try {
+        const profileResp = await getUserProfile();
+        const interestsResp = await getUserInterests().catch(() => null);
+
+        const profileData = (profileResp as any)?.data ?? profileResp ?? {};
+        const interestData = interestsResp ? (interestsResp as any)?.data ?? interestsResp : undefined;
+
+        enrichedUser = {
+          ...user,
+          ...profileData,
+          interestAnnouncementCategories:
+            interestData?.interestAnnouncementCategoryName ?? user.interestAnnouncementCategories ?? [],
+          interestFields: interestData?.interestFieldName ?? user.interestFields ?? [],
+          interestProgramCategories: interestData?.interestProgramCategoryName ?? user.interestProgramCategories ?? [],
+        };
+      } catch (err) {
+        console.error('로그인 후 프로필 보강 실패:', err);
+        // 보강 실패 시 기존 user 데이터로 진행
+      }
+    }
+
+    const interests = [
+      ...(enrichedUser.interestAnnouncementCategories ?? []),
+      ...(enrichedUser.interestFields ?? []),
+      ...(enrichedUser.interestProgramCategories ?? []),
+    ];
+
+    setUserProfile({
+      username: enrichedUser.id,
+      name: enrichedUser.name ?? '',
+      gender: enrichedUser.gender === 'MALE' ? 'male' : 'female',
+      hasMilitary: enrichedUser.militaryStatus ? 'yes' : 'no',
+      grade: enrichedUser.grade?.toString() ?? null,
+      department: enrichedUser.department ?? '',
+      college: '',
+      status:
+        enrichedUser.enrollmentStatus === 'ENROLLED'
+          ? 'enrolled'
+          : enrichedUser.enrollmentStatus === 'LEAVE'
+          ? 'leave'
+          : 'graduated',
+      semester: enrichedUser.currentSemester?.toString() ?? null,
+      location: enrichedUser.residence ?? '',
+      interests,
+    });
+
+    // 프로필 설정 이후 로그인 상태 전환
     setIsLoggedIn(true);
     setShowLoginDialog(false);
-
-    // 기본 프로필 설정 (백엔드에서 프로필 정보를 조회하지 않음)
-    setUserProfile({
-      username: username,
-      name: username,
-      gender: 'male',
-      hasMilitary: 'no',
-      grade: null,
-      department: '',
-      college: '',
-      status: 'enrolled',
-      semester: null,
-      location: '',
-      interests: [],
-    });
 
     // 북마크 목록 초기화
     try {

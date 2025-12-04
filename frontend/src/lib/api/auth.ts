@@ -11,8 +11,6 @@
  * - PUT /api/user/interests - 관심분야 수정
  */
 
-import { UserProfile } from '../types';
-
 const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:8080/api';
 
 export interface ApiResponse<T = any> {
@@ -23,8 +21,9 @@ export interface ApiResponse<T = any> {
 
 // 백엔드 호환을 위한 임시 응답 타입
 export interface AuthResponse {
-  isSuccess: boolean;
-  message: string;
+  isSuccess?: boolean;
+  success?: boolean;
+  message?: string;
   data?: any;
 }
 
@@ -74,6 +73,24 @@ export interface UpdateInterestsRequest {
   interestProgramCategoryName: string[];
 }
 
+// 응답을 안전하게 JSON 파싱 (빈 본문/문자열 대응)
+async function parseJsonSafe(response: Response) {
+  const text = await response.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+const successPayload = (payload: any, fallbackMessage: string): AuthResponse => ({
+  isSuccess: true,
+  success: true,
+  message: typeof payload === 'string' ? payload : payload?.message ?? fallbackMessage,
+  data: payload?.data ?? (typeof payload === 'object' ? payload : undefined),
+});
+
 /**
  * 회원가입
  * @param request - 회원가입 요청 정보
@@ -94,24 +111,22 @@ export async function register(request: RegisterRequest): Promise<AuthResponse> 
       body: JSON.stringify(request),
     });
 
-    // 200 OK - 회원가입 성공
+    const payload = await parseJsonSafe(response);
+
+    // 200/201 - 회원가입 성공
     if (response.ok) {
-      return await response.json();
+      return successPayload(payload, '회원가입이 완료되었습니다.');
     }
 
-    // 400 Bad Request - 필수 값 누락
     if (response.status === 400) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '필수 항목을 모두 입력해주세요.');
+      throw new Error(
+        (payload as any)?.message || '필수 항목을 모두 입력해주세요.'
+      );
     }
 
-    // 기타 에러
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `회원가입 실패: ${response.statusText}`);
-    }
-
-    return await response.json();
+    throw new Error(
+      (payload as any)?.message || `회원가입 실패: ${response.statusText}`
+    );
   } catch (error) {
     console.error('회원가입 오류:', error);
     throw error;
@@ -138,24 +153,21 @@ export async function login(request: LoginRequest): Promise<AuthResponse> {
       body: JSON.stringify(request),
     });
 
-    // 200 OK - 로그인 성공
+    const payload = await parseJsonSafe(response);
+
     if (response.ok) {
-      return await response.json();
+      return successPayload(payload, '로그인이 완료되었습니다.');
     }
 
-    // 401 Unauthorized - 로그인 실패
     if (response.status === 401) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '아이디 또는 비밀번호가 올바르지 않습니다.');
+      throw new Error(
+        (payload as any)?.message || '아이디 또는 비밀번호가 올바르지 않습니다.'
+      );
     }
 
-    // 기타 에러
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `로그인 실패: ${response.statusText}`);
-    }
-
-    return await response.json();
+    throw new Error(
+      (payload as any)?.message || `로그인 실패: ${response.statusText}`
+    );
   } catch (error) {
     console.error('로그인 오류:', error);
     throw error;
@@ -176,12 +188,15 @@ export async function logout(): Promise<AuthResponse> {
       credentials: 'include',
     });
 
+    const payload = await parseJsonSafe(response);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `로그아웃 실패: ${response.statusText}`);
+      throw new Error(
+        (payload as any)?.message || `로그아웃 실패: ${response.statusText}`
+      );
     }
 
-    return await response.json();
+    return successPayload(payload, '로그아웃이 완료되었습니다.');
   } catch (error) {
     console.error('로그아웃 오류:', error);
     throw error;
@@ -206,12 +221,16 @@ export async function getUserProfile(): Promise<AuthResponse> {
       credentials: 'include',
     });
 
+    const payload = await parseJsonSafe(response);
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `프로필 조회 실패: ${response.statusText}`);
+      throw new Error(
+        (payload as any)?.message || `프로필 조회 실패: ${response.statusText}`
+      );
     }
 
-    return await response.json();
+    // 백엔드 스펙: ApiResponse 래퍼 없이 사용자 객체만 내려옴
+    return successPayload(payload, '프로필 조회에 성공했습니다.');
   } catch (error) {
     console.error('프로필 조회 오류:', error);
     throw error;
@@ -243,30 +262,27 @@ export async function updateUserProfile(profile: UpdateProfileRequest): Promise<
       body: JSON.stringify(profile),
     });
 
-    // 200 OK - 수정 성공
+    const payload = await parseJsonSafe(response);
+
     if (response.ok) {
-      return await response.json();
+      return successPayload(payload, '회원 정보가 수정되었습니다.');
     }
 
-    // 400 Bad Request - 유효하지 않은 필드
     if (response.status === 400) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '유효하지 않은 정보입니다.');
+      throw new Error(
+        (payload as any)?.message || '유효하지 않은 정보입니다.'
+      );
     }
 
-    // 401 Unauthorized - 인증 실패
     if (response.status === 401) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '로그인이 필요합니다.');
+      throw new Error(
+        (payload as any)?.message || '로그인이 필요합니다.'
+      );
     }
 
-    // 기타 에러
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `프로필 업데이트 실패: ${response.statusText}`);
-    }
-
-    return await response.json();
+    throw new Error(
+      (payload as any)?.message || `프로필 업데이트 실패: ${response.statusText}`
+    );
   } catch (error) {
     console.error('프로필 업데이트 오류:', error);
     throw error;
@@ -297,30 +313,27 @@ export async function getUserInterests(): Promise<AuthResponse> {
       credentials: 'include',
     });
 
-    // 200 OK - 정상 조회
+    const payload = await parseJsonSafe(response);
+
     if (response.ok) {
-      return await response.json();
+      return successPayload(payload, '관심분야 조회에 성공했습니다.');
     }
 
-    // 400 Bad Request - 유효하지 않은 필드
     if (response.status === 400) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '유효하지 않은 요청입니다.');
+      throw new Error(
+        (payload as any)?.message || '유효하지 않은 요청입니다.'
+      );
     }
 
-    // 404 Not Found - 해당 사용자 없음
     if (response.status === 404) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '사용자를 찾을 수 없습니다.');
+      throw new Error(
+        (payload as any)?.message || '사용자를 찾을 수 없습니다.'
+      );
     }
 
-    // 기타 에러
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `관심분야 조회 실패: ${response.statusText}`);
-    }
-
-    return await response.json();
+    throw new Error(
+      (payload as any)?.message || `관심분야 조회 실패: ${response.statusText}`
+    );
   } catch (error) {
     console.error('관심분야 조회 오류:', error);
     throw error;
@@ -353,30 +366,27 @@ export async function updateUserInterests(interests: UpdateInterestsRequest): Pr
       body: JSON.stringify(interests),
     });
 
-    // 200 OK - 수정 성공
+    const payload = await parseJsonSafe(response);
+
     if (response.ok) {
-      return await response.json();
+      return successPayload(payload, '관심분야가 업데이트되었습니다.');
     }
 
-    // 400 Bad Request - 유효하지 않은 category_id
     if (response.status === 400) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '유효하지 않은 카테고리가 포함되어 있습니다.');
+      throw new Error(
+        (payload as any)?.message || '유효하지 않은 카테고리가 포함되어 있습니다.'
+      );
     }
 
-    // 404 Not Found - 사용자 존재하지 않음
     if (response.status === 404) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || '사용자를 찾을 수 없습니다.');
+      throw new Error(
+        (payload as any)?.message || '사용자를 찾을 수 없습니다.'
+      );
     }
 
-    // 기타 에러
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `관심분야 업데이트 실패: ${response.statusText}`);
-    }
-
-    return await response.json();
+    throw new Error(
+      (payload as any)?.message || `관심분야 업데이트 실패: ${response.statusText}`
+    );
   } catch (error) {
     console.error('관심분야 업데이트 오류:', error);
     throw error;

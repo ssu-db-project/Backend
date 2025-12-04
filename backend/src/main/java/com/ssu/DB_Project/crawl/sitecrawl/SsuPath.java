@@ -99,81 +99,113 @@ public class SsuPath implements SiteCrawler {
             Thread.sleep(3000);
 
             // 2. 목록 페이지 이동 및 수집
-            System.out.println("슈패스 비교과 페이지로 이동 : " + SSUPATH_URL);
-            webDriver.get(SSUPATH_URL);
-
-            // 페이지 로딩 대기
-            webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.lica_wrap")));
-
+            // [수정] 리스트 선언을 반복문 밖으로 이동하여 누적
             List<CrawlTarget> crawlTargetList = new ArrayList<>();
-            List<WebElement> webElementList =  webDriver.findElements(By.cssSelector("div.lica_wrap > ul > li"));
 
-            if (webElementList.isEmpty()) {
-                System.out.println("수집할 데이터가 없습니다.");
-            }
+            // [수정] 2페이지까지 수집하기 위한 변수 및 반복문 추가
+            int MAX_PAGE = 2;
 
-            for (WebElement webElement : webElementList) {
-                try {
-                    // 1. 제목 및 상세 파라미터 추출
-                    WebElement titleTag = webElement.findElement(By.cssSelector(".text_wrap .tit"));
-                    String title = titleTag.getText().trim();
+            for (int page = 1; page <= MAX_PAGE; page++) {
+                System.out.println("슈패스 비교과 페이지 수집 중 : " + page + "페이지");
 
-                    // data-params에서 encSddpbSeq 추출하여 URL 조립
-                    String dataParams = titleTag.getAttribute("data-params");
-                    String encSeq = extractEncSeq(dataParams);
+                // [수정] 페이지 이동 로직 추가 (1페이지는 URL 접속, 2페이지부터는 JS 실행)
+                if (page == 1) {
+                    webDriver.get(SSUPATH_URL);
 
-                    if (encSeq.isEmpty()) {
-                        System.out.println("URL 파라미터 추출 실패 : " + title);
-
-                        continue;
-                    }
-
-                    // 상세 URL 조립
-                    String finalUrl = SSUPATH_INFO_URL + "?encSddpbSeq=" + encSeq;
-
-                    // 2. 부서  추출
-                    String dept = null;
-
-
+                    webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.lica_wrap")));
+                } else {
                     try {
-                        dept = webElement.findElement(By.cssSelector(".major_type li.first")).getText().trim();
-                        //category = webElement.findElement(By.cssSelector(".major_type li.last")).getText().trim();
+                        // 페이지네이션 링크를 찾아 클릭 시도
+                        // 웹 표준에 따라 'pagination' 클래스 내의 해당 페이지 번호 <a> 태그를 찾음
+                        WebElement pageLink = webDriverWait.until(
+                                ExpectedConditions.elementToBeClickable(By.xpath("//div[@class='pagination']//a[text()='" + page + "']"))
+                        );
+
+                        // 클릭 실행
+                        pageLink.click();
+
+                        // 새 페이지의 목록 요소가 로드될 때까지 대기
+                        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.lica_wrap")));
                     } catch (Exception e) {
-                        // 못 찾으면 null 유지
+                        System.out.println("페이지 이동 실패: " + e.getMessage());
+                        break;
                     }
-
-                    // 상태 추출
-                    String status = null;
-                    try {
-                        status = webElement.findElement(By.cssSelector(".label_box span")).getText().trim();
-                    } catch (Exception e) {
-                        // 못 찾으면 null 유지
-                    }
-
-                    // 날짜 추출
-                    String dateInfo = null;
-                    try {
-                        List<WebElement> dls = webElement.findElements(By.cssSelector(".info_wrap dl"));
-                        for (WebElement dl : dls) {
-                            String dtText = dl.findElement(By.tagName("dt")).getText();
-
-                            if (dtText.contains("신청기간")) {
-                                dateInfo = dl.findElement(By.tagName("dd")).getText().trim();
-
-                                break;
-                            }
-                        }
-                    } catch (Exception e) {
-
-                    }
-
-                    crawlTargetList.add(new CrawlTarget(title, finalUrl, dateInfo, status, dept));
-
-
-                } catch (Exception e) {
-                    System.out.println("항목 파싱 실패");
                 }
-            }
+
+                // 페이지 로딩 대기
+                webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.lica_wrap")));
+                Thread.sleep(1000); // 페이지 전환 안정화 대기
+
+                List<WebElement> webElementList =  webDriver.findElements(By.cssSelector("div.lica_wrap > ul > li"));
+
+                if (webElementList.isEmpty()) {
+                    System.out.println("수집할 데이터가 없습니다.");
+                    break; // 데이터가 없으면 루프 종료
+                }
+
+                for (WebElement webElement : webElementList) {
+                    try {
+                        // 1. 제목 및 상세 파라미터 추출
+                        WebElement titleTag = webElement.findElement(By.cssSelector(".text_wrap .tit"));
+                        String title = titleTag.getText().trim();
+
+                        // data-params에서 encSddpbSeq 추출하여 URL 조립
+                        String dataParams = titleTag.getAttribute("data-params");
+                        String encSeq = extractEncSeq(dataParams);
+
+                        if (encSeq.isEmpty()) {
+                            System.out.println("URL 파라미터 추출 실패 : " + title);
+
+                            continue;
+                        }
+
+                        // 상세 URL 조립
+                        String finalUrl = SSUPATH_INFO_URL + "?encSddpbSeq=" + encSeq;
+
+                        // 2. 부서  추출
+                        String dept = null;
+
+
+                        try {
+                            dept = webElement.findElement(By.cssSelector(".major_type li.first")).getText().trim();
+                            //category = webElement.findElement(By.cssSelector(".major_type li.last")).getText().trim();
+                        } catch (Exception e) {
+                            // 못 찾으면 null 유지
+                        }
+
+                        // 상태 추출
+                        String status = null;
+                        try {
+                            status = webElement.findElement(By.cssSelector(".label_box span")).getText().trim();
+                        } catch (Exception e) {
+                            // 못 찾으면 null 유지
+                        }
+
+                        // 날짜 추출
+                        String dateInfo = null;
+                        try {
+                            List<WebElement> dls = webElement.findElements(By.cssSelector(".info_wrap dl"));
+                            for (WebElement dl : dls) {
+                                String dtText = dl.findElement(By.tagName("dt")).getText();
+
+                                if (dtText.contains("신청기간")) {
+                                    dateInfo = dl.findElement(By.tagName("dd")).getText().trim();
+
+                                    break;
+                                }
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+                        crawlTargetList.add(new CrawlTarget(title, finalUrl, dateInfo, status, dept));
+
+
+                    } catch (Exception e) {
+                        System.out.println("항목 파싱 실패");
+                    }
+                }
+            } // end for loop
 
             System.out.println("총 수집된 데이터: " + crawlTargetList.size() + "개");
 

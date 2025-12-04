@@ -34,45 +34,79 @@ export function AIAssistantDialog({ open, onOpenChange, selectedSupport, userId 
 
     try {
       // 사용자 ID: prop에서 전달받음
-      const activeUserId = userId || 'anonymous';
-      let response;
-      
-      // API 호출 (실제 연결 시 여기서 백엔드 호출)
-      if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
-        // 프로그램/비교과 챗봇 API
-        response = await askProgramChatbot(activeUserId, userMessage);
-      } else {
-        // 공지사항 챗봇 API
-        response = await askAnnouncementChatbot(activeUserId, userMessage);
+      const activeUserId = String(userId || '');
+      if (!activeUserId) {
+        toast.error('로그인 정보가 없습니다. 로그인 후 이용해주세요.');
+        setIsLoading(false);
+        return;
       }
-      
+
+      const isProgramChat = (selectedSupport?.tags || []).includes('program');
+      const response = isProgramChat
+        ? await askProgramChatbot(activeUserId, userMessage)
+        : await askAnnouncementChatbot(activeUserId, userMessage);
       // API 응답 처리
-      let aiMessage = '';
-      if (typeof response === 'string') {
-        aiMessage = response;
-      } else if (response.data) {
-        aiMessage = response.data;
-      } else if (response.message) {
-        aiMessage = response.message;
-      } else {
-        aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
-      }
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
+      // API 응답은 string만 처리
+      setMessages(prev => [...prev, { role: 'assistant', content: String(response) }]);
     } catch (error) {
       console.error('AI 챗봇 오류:', error);
-      
-      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
-      const fallbackMessage = selectedSupport
-        ? `"${selectedSupport.title}"에 대해 질문하셨네요. 이 지원 사업은 ${selectedSupport.eligibility}를 대상으로 하며, ${selectedSupport.amount}을 지원합니다. 구체적으로 어떤 부분이 궁금하신가요?`
-        : '안녕하세요! 정부 지원 정책에 대해 궁금하신 점을 알려주시면 자세히 안내해드리겠습니다.';
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: fallbackMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '죄송합니다. AI 응답 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
       toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
   };
+
+
+  // const handleSend = async () => {
+  //   if (!input.trim() || isLoading) return;
+
+  //   const userMessage = input;
+  //   setInput('');
+  //   setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+  //   setIsLoading(true);
+
+  //   try {
+  //     // 사용자 ID: prop에서 전달받음
+  //     const activeUserId = userId || 'anonymous';
+  //     let response;
+      
+  //     // API 호출 (실제 연결 시 여기서 백엔드 호출)
+  //     if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
+  //       // 프로그램/비교과 챗봇 API
+  //       response = await askProgramChatbot(activeUserId, userMessage);
+  //     } else {
+  //       // 공지사항 챗봇 API
+  //       response = await askAnnouncementChatbot(activeUserId, userMessage);
+  //     }
+      
+  //     // API 응답 처리
+  //     let aiMessage = '';
+  //     if (typeof response === 'string') {
+  //       aiMessage = response;
+  //     } else if (response.data) {
+  //       aiMessage = response.data;
+  //     } else if (response.message) {
+  //       aiMessage = response.message;
+  //     } else {
+  //       aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
+  //     }
+      
+  //     setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
+  //   } catch (error) {
+  //     console.error('AI 챗봇 오류:', error);
+      
+  //     // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
+  //     const fallbackMessage = selectedSupport
+  //       ? `"${selectedSupport.title}"에 대해 질문하셨네요. 이 지원 사업은 ${selectedSupport.eligibility}를 대상으로 하며, ${selectedSupport.amount}을 지원합니다. 구체적으로 어떤 부분이 궁금하신가요?`
+  //       : '안녕하세요! 정부 지원 정책에 대해 궁금하신 점을 알려주시면 자세히 안내해드리겠습니다.';
+      
+  //     setMessages(prev => [...prev, { role: 'assistant', content: fallbackMessage }]);
+  //     toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

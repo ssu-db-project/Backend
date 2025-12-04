@@ -190,7 +190,7 @@ CREATE TABLE announcement (
 
 -- 비교과 (수정됨: organization_id 삭제)
 CREATE TABLE program (
-    id VARCHAR(20) PRIMARY KEY,
+    id VARCHAR(100) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     subtitle VARCHAR(255),
     category_id VARCHAR(20),

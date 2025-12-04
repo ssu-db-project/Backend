@@ -119,6 +119,27 @@ public class ProgramService {
 
         vectorIngestionService.embedProgram(saved);
 
+        // DML INSERT를 위한 데이터 출력
+        System.out.println("\nDML INSERT를 위한 데이터 출력");
+        System.out.println("---  Program 테이블 속성 (Final Program Object) ---");
+        System.out.println("id: " + program.getId());
+        System.out.println("title: " + program.getTitle());
+        System.out.println("subtitle: " + program.getSubtitle());
+        System.out.println("category_id: " + program.getCategory().getId() + " (" + program.getCategory().getName() + ")");
+        System.out.println("organization_name: " + program.getOrganizationName());
+        System.out.println("operation_method: " + program.getOperationMethod());
+        System.out.println("apply_start_at: " + program.getApplyStartAt());
+        System.out.println("apply_end_at: " + program.getApplyEndAt());
+        System.out.println("program_start_at: " + program.getProgramStartAt());
+        System.out.println("program_end_at: " + program.getProgramEndAt());
+        System.out.println("location: " + program.getLocation());
+        System.out.println("target_audience: " + program.getTargetAudience());
+        System.out.println("capacity: " + program.getCapacity());
+        System.out.println("original_url: " + program.getOriginalUrl());
+        System.out.println("content (Full):\n" + program.getContent());
+        System.out.println("created_at: DB Default (Current Value: " + program.getCreatedAt() + ")");
+        System.out.println("-----------------------------------------------------");
+
         return saved;
     }
 

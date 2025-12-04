@@ -1,4 +1,5 @@
 import { Calendar, DollarSign, Users, ExternalLink, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -26,6 +27,22 @@ interface SupportCardProps {
 }
 
 export function SupportCard({ support, onAIClick, isBookmarked = false, onToggleBookmark }: SupportCardProps) {
+  const handleOpenDetail = async () => {
+    if (support.sourceUrl) {
+      window.open(support.sourceUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (support.fullText) {
+      const dataUrl = `data:text/plain;charset=utf-8,${encodeURIComponent(support.fullText)}`;
+      window.open(dataUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    // 원본 링크가 없고 본문도 없을 때는 안내만
+    toast.info('원본 링크가 제공되지 않았습니다.');
+  };
+
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow">
       <div className="flex justify-between items-start mb-4">
@@ -105,11 +122,9 @@ export function SupportCard({ support, onAIClick, isBookmarked = false, onToggle
 
       <div className="flex items-center justify-between pt-4 border-t">
         <p className="text-sm text-gray-500">{support.agency}</p>
-        <Button variant="link" className="gap-1" asChild>
-          <a href={support.sourceUrl} target="_blank" rel="noopener noreferrer">
-            자세히 보기
-            <ExternalLink className="w-4 h-4" />
-          </a>
+        <Button variant="link" className="gap-1" onClick={handleOpenDetail}>
+          자세히 보기
+          <ExternalLink className="w-4 h-4" />
         </Button>
       </div>
     </Card>

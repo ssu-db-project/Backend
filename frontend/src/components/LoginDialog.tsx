@@ -8,31 +8,49 @@ import { ScrollArea } from './ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { login, register, checkUsernameAvailability as apiCheckUsernameAvailability } from '../lib/api/auth';
+import { login, register, getUserProfile, getUserInterests, checkUsernameAvailability as apiCheckUsernameAvailability } from '../lib/api/auth';
+import type { AuthUserData } from '../lib/types';
 
 interface LoginDialogProps {
   open: boolean;
   onClose: () => void;
-  onLoginSuccess: (username: string) => void;
+  onLoginSuccess: (user: AuthUserData) => void;
 }
 
 export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps) {
   const [loginData, setLoginData] = useState({ id: '', password: '' });
-  const [signupData, setSignupData] = useState({
+  type SignupDataState = {
+    id: string;
+    password: string;
+    passwordConfirm: string;
+    name: string;
+    gender: 'MALE' | 'FEMALE';
+    militaryStatus: boolean;
+    grade: number | '';
+    currentSemester: number | '';
+    department: string;
+    enrollmentStatus: 'ENROLLED' | 'LEAVE' | 'GRADUATED';
+    residence: string;
+    interestAnnouncementCategoryName: string[];
+    interestFieldName: string[];
+    interestProgramCategoryName: string[];
+  };
+
+  const [signupData, setSignupData] = useState<SignupDataState>({
     id: '',
     password: '',
     passwordConfirm: '',
     name: '',
-    gender: 'MALE' as 'MALE' | 'FEMALE',
+    gender: 'MALE',
     militaryStatus: false,
-    grade: 1,
-    currentSemester: 1,
+    grade: '',
+    currentSemester: '',
     department: '',
-    enrollmentStatus: 'ENROLLED' as 'ENROLLED' | 'LEAVE' | 'GRADUATED',
+    enrollmentStatus: 'ENROLLED',
     residence: '',
-    interestAnnouncementCategoryName: [] as string[],
-    interestFieldName: [] as string[],
-    interestProgramCategoryName: [] as string[],
+    interestAnnouncementCategoryName: [],
+    interestFieldName: [],
+    interestProgramCategoryName: [],
   });
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -127,43 +145,99 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
     }
   };
 
+  const isSuccessResponse = (resp: any) => (resp?.isSuccess ?? resp?.success ?? false) === true;
+
+  const fetchUserProfileSafely = async (): Promise<AuthUserData | undefined> => {
+    try {
+      const [profileResp, interestsResp] = await Promise.all([
+        getUserProfile(),
+        getUserInterests().catch(() => null),
+      ]);
+
+      const baseUser =
+        (isSuccessResponse(profileResp) && profileResp.data
+          ? profileResp.data
+          : isSuccessResponse(profileResp)
+          ? profileResp
+          : undefined) as AuthUserData | undefined;
+
+      const interests =
+        interestsResp && isSuccessResponse(interestsResp)
+          ? interestsResp.data
+          : undefined;
+
+      if (baseUser && interests) {
+        return {
+          ...baseUser,
+          interestAnnouncementCategories: interests.interestAnnouncementCategoryName,
+          interestFields: interests.interestFieldName,
+          interestProgramCategories: interests.interestProgramCategoryName,
+        };
+      }
+      return baseUser;
+    } catch (err) {
+      console.error('프로필 조회 오류:', err);
+    }
+    return undefined;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!loginData.id || !loginData.password) {
-      toast.error('아이디와 비밀번호를 입력해주세요.');
+  e.preventDefault();
+  
+  if (!loginData.id || !loginData.password) {
+    toast.error('아이디와 비밀번호를 입력해주세요.');
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const response = await login({
+      id: loginData.id,
+      password: loginData.password,
+    });
+
+    if (!isSuccessResponse(response)) {
+      toast.error(response.message || '로그인 실패');
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await login({
-        id: loginData.id,
-        password: loginData.password,
-      });
+    toast.success(response.message || '로그인이 완료되었습니다.');
 
-      if (response.isSuccess) {
-        toast.success('로그인이 완료되었습니다!');
-        const serverId = (response as any).data?.id || loginData.id;
-        onLoginSuccess(serverId);
-        setLoginData({ id: '', password: '' });
-        onClose();
-      } else {
-        toast.error(response.message || '로그인 실패');
-      }
-    } catch (error) {
-      console.error('로그인 오류:', error);
-      toast.error('로그인 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
+    let user: AuthUserData | undefined = response.data as AuthUserData | undefined;
+
+    // 실서버 세션 확인 및 정보 보완: 프로필/관심사 조회가 실패하면 로그인 처리 중단
+    const profile = user ?? (await fetchUserProfileSafely());
+    if (!profile) {
+      toast.error('사용자 정보를 불러오지 못했습니다. 다시 로그인해주세요.');
+      return;
     }
-  };
+
+    onLoginSuccess(profile);
+    setLoginData({ id: '', password: '' });
+    onClose();
+  } catch (error) {
+    console.error('로그인 오류:', error);
+    toast.error('로그인 중 오류가 발생했습니다.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!signupData.id || !signupData.password) {
       toast.error('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+    const gradeNum = Number(signupData.grade);
+    const semesterNum = Number(signupData.currentSemester);
+    if (!Number.isFinite(gradeNum) || gradeNum < 1 || gradeNum > 10) {
+      toast.error('학년은 1~10 사이의 정수를 입력하세요.');
+      return;
+    }
+    if (!Number.isFinite(semesterNum) || semesterNum < 1 || semesterNum > 20) {
+      toast.error('학기는 1~20 사이의 정수를 입력하세요.');
       return;
     }
     
@@ -203,6 +277,8 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
 
       const registerPayload = {
         ...signupData,
+        grade: gradeNum,
+        currentSemester: semesterNum,
         interestAnnouncementCategoryName: announcementCategories,
         interestFieldName: fields,
         interestProgramCategoryName: programCategories,
@@ -210,36 +286,58 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
       
       const response = await register(registerPayload);
 
-      if (response.isSuccess) {
+        if (!isSuccessResponse(response)) {
+          toast.error(response.message || '회원가입 실패');
+          return;
+        }
+
         toast.success('회원가입이 완료되었습니다!');
-        const serverId = (response as any).data?.id || signupData.id;
-        onLoginSuccess(serverId);
+
+        // 실서버 스펙: 회원가입은 세션을 만들지 않으므로 즉시 로그인 → 프로필 조회까지 성공해야만 상태 전환
+        try {
+          const loginResp = await login({ id: signupData.id, password: signupData.password });
+          if (!isSuccessResponse(loginResp)) {
+            toast.error(loginResp.message || '자동 로그인에 실패했습니다. 로그인해주세요.');
+            return;
+          }
+
+          const profile =
+            (loginResp.data as AuthUserData) ?? (await fetchUserProfileSafely());
+          if (!profile) {
+            toast.error('로그인은 되었으나 사용자 정보를 가져오지 못했습니다. 다시 로그인해주세요.');
+            return;
+          }
+
+          onLoginSuccess(profile);
+        } catch (err) {
+          console.error('자동 로그인 오류:', err);
+          toast.error('자동 로그인에 실패했습니다. 로그인해주세요.');
+          return;
+        }
+
         // 상태 초기화
-        setSignupData({
-          id: '',
-          password: '',
-          passwordConfirm: '',
-          name: '',
-          gender: 'MALE',
-          militaryStatus: false,
-          grade: 1,
-          currentSemester: 1,
-          department: '',
-          enrollmentStatus: 'ENROLLED',
-          residence: '',
-          interestAnnouncementCategoryName: [],
-          interestFieldName: [],
-          interestProgramCategoryName: [],
-        });
+          setSignupData({
+            id: '',
+            password: '',
+            passwordConfirm: '',
+            name: '',
+            gender: 'MALE',
+            militaryStatus: false,
+            grade: '',
+            currentSemester: '',
+            department: '',
+            enrollmentStatus: 'ENROLLED',
+            residence: '',
+            interestAnnouncementCategoryName: [],
+            interestFieldName: [],
+            interestProgramCategoryName: [],
+          });
         setUsernameCheckStatus('idle');
         setPasswordMatchError(false);
         setSelectedCity('');
         setSelectedDistrict('');
         setSelectedInterests([]);
         onClose();
-      } else {
-        toast.error(response.message || '회원가입 실패');
-      }
     } catch (error) {
       console.error('회원가입 오류:', error);
       toast.error('회원가입 중 오류가 발생했습니다.');
@@ -472,34 +570,60 @@ export function LoginDialog({ open, onClose, onLoginSuccess }: LoginDialogProps)
                   </div>
 
                   {signupData.enrollmentStatus !== 'GRADUATED' && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-grade">학년 *</Label>
-                        <Input
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="signup-grade">학년 *</Label>
+                      <Input
                           id="signup-grade"
                           type="number"
                           min="1"
-                          max="4"
+                          max="10"
                           placeholder="1"
-                          value={signupData.grade}
-                          onChange={(e) => setSignupData({ ...signupData, grade: parseInt(e.target.value) || 1 })}
+                          value={signupData.grade === '' ? '' : signupData.grade}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                              setSignupData({ ...signupData, grade: '' });
+                              return;
+                            }
+                            const next = parseInt(raw, 10);
+                            if (isNaN(next)) {
+                              setSignupData({ ...signupData, grade: '' });
+                              return;
+                            }
+                            const clamped = Math.min(10, Math.max(1, next));
+                            setSignupData({ ...signupData, grade: clamped });
+                          }}
                           required
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-semester">학기 *</Label>
-                        <Input
-                          id="signup-semester"
-                          type="number"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="signup-semester">학기 *</Label>
+                      <Input
+            id="signup-semester"
+            type="number"
                           min="1"
-                          max="8"
+                          max="20"
                           placeholder="1"
-                          value={signupData.currentSemester}
-                          onChange={(e) => setSignupData({ ...signupData, currentSemester: parseInt(e.target.value) || 1 })}
+                          value={signupData.currentSemester === '' ? '' : signupData.currentSemester}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                              setSignupData({ ...signupData, currentSemester: '' });
+                              return;
+                            }
+                            const next = parseInt(raw, 10);
+                            if (isNaN(next)) {
+                              setSignupData({ ...signupData, currentSemester: '' });
+                              return;
+                            }
+                            const clamped = Math.min(20, Math.max(1, next));
+                            setSignupData({ ...signupData, currentSemester: clamped });
+                          }}
                           required
-                        />
-                      </div>
-                    </div>
+          />
+        </div>
+      </div>
                   )}
 
                   <div className="space-y-1.5">

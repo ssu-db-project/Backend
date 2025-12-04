@@ -26,7 +26,7 @@ import org.hibernate.annotations.CreationTimestamp;
 public class Program extends BaseEntity {
 
     @Id
-    @Column(length = 20)
+    @Column(length = 100)
     private String id;
 
     @Column(nullable = false)

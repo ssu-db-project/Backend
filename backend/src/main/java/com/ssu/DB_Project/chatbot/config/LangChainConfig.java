@@ -31,6 +31,7 @@ public class LangChainConfig {
                 .apiKey(openaiApiKey)
                 .modelName(openaiModel)
                 .temperature(openaiTemperature)
+                .timeout(Duration.ofSeconds(300))
                 .build();
     }
 

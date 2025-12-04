@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CrawlService {
+
     private final List<SiteCrawler> crawlers;
     public void runAllCrawls() {
         for (SiteCrawler crawler : crawlers) {

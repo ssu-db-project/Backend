@@ -103,6 +103,21 @@ public class AnnouncementService {
         // 벡터 DB 저장
         vectorIngestionService.embedAnnouncement(saved);
 
+        System.out.println("\nDML INSERT를 위한 데이터 출력");
+        System.out.println("---  Announcement 테이블 속성 (Final Announcement Object) ---");
+        // id는 AUTO_INCREMENT이므로 저장 후 반환된 객체에서 접근 가능하거나, 이 시점에서는 null/0
+        System.out.println("id: " + announcement.getId());
+        System.out.println("category_id: " + announcement.getCategory().getId() + " (" + announcement.getCategory().getName() + ")");
+        System.out.println("department_name: " + announcement.getDepartmentName());
+        System.out.println("title: " + announcement.getTitle());
+        System.out.println("summary (Full):\n" + announcement.getSummary()); // Summary 전체 출력
+        System.out.println("url: " + announcement.getUrl());
+        System.out.println("posted_at: " + announcement.getPostedAt());
+        System.out.println("status: " + announcement.getStatus());
+        System.out.println("content (Full):\n" + announcement.getContent()); // Content 전체 출력
+        System.out.println("created_at: DB Default (Current Value: " + announcement.getCreatedAt() + ")");
+        System.out.println("-----------------------------------------------------");
+
         return saved;
     }
 
