@@ -1,3 +1,18 @@
+// 백엔드 인증 응답 data 타입
+export interface AuthUserData {
+  id: string;
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  militaryStatus: boolean;
+  grade: number;
+  currentSemester: number;
+  department: string;
+  enrollmentStatus: 'ENROLLED' | 'LEAVE' | 'GRADUATED';
+  residence: string;
+  interestAnnouncementCategories: string[];
+  interestFields: string[];
+  interestProgramCategories: string[];
+}
 /**
  * 숭실대학교 공지사항 플랫폼 - 타입 정의
  * 

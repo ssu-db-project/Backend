@@ -33,49 +33,24 @@ export function AIAssistantDialog({ open, onOpenChange, selectedSupport, userId 
     setIsLoading(true);
 
     try {
-      // ✅ 1) 로그인 여부 체크
-      if (!userId) {
-        toast.error('로그인 후 이용 가능한 서비스입니다.');
-        // 폴백 메세지(선택)
-        setMessages(prev => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: '현재는 로그인된 사용자 정보가 없어 AI 도우미를 이용할 수 없습니다. 먼저 로그인해 주세요.',
-          },
-        ]);
+      // 사용자 ID: prop에서 전달받음
+      const activeUserId = String(userId || '');
+      if (!activeUserId) {
+        toast.error('로그인 정보가 없습니다. 로그인 후 이용해주세요.');
+        setIsLoading(false);
         return;
       }
 
-      // ✅ 2) userId 그대로 사용 (anonymous 제거)
-      let response;
-      if (selectedSupport && selectedSupport.category.startsWith('비교과')) {
-        response = await askProgramChatbot(userId, userMessage);
-      } else {
-        response = await askAnnouncementChatbot(userId, userMessage);
-      }
-
-      let aiMessage = '';
-      if (typeof response === 'string') {
-        aiMessage = response;
-      } else if ((response as any).data) {
-        aiMessage = (response as any).data;
-      } else if ((response as any).message) {
-        aiMessage = (response as any).message;
-      } else {
-        aiMessage = '죄송합니다. 응답을 받지 못했습니다.';
-      }
-
-      setMessages(prev => [...prev, { role: 'assistant', content: aiMessage }]);
+      const isProgramChat = (selectedSupport?.tags || []).includes('program');
+      const response = isProgramChat
+        ? await askProgramChatbot(activeUserId, userMessage)
+        : await askAnnouncementChatbot(activeUserId, userMessage);
+      // API 응답 처리
+      // API 응답은 string만 처리
+      setMessages(prev => [...prev, { role: 'assistant', content: String(response) }]);
     } catch (error) {
       console.error('AI 챗봇 오류:', error);
-      
-      // 폴백: Mock 응답 사용 (API 연결 전까지는 기본 응답 제공)
-      const fallbackMessage = selectedSupport
-        ? `"${selectedSupport.title}"에 대해 질문하셨네요. 이 지원 사업은 ${selectedSupport.eligibility}를 대상으로 하며, ${selectedSupport.amount}을 지원합니다. 구체적으로 어떤 부분이 궁금하신가요?`
-        : '안녕하세요! 정부 지원 정책에 대해 궁금하신 점을 알려주시면 자세히 안내해드리겠습니다.';
-      
-      setMessages(prev => [...prev, { role: 'assistant', content: fallbackMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '죄송합니다. AI 응답 중 오류가 발생했습니다. 다시 시도해주세요.' }]);
       toast.error('AI 응답 중 일시적 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

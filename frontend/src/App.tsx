@@ -3,10 +3,10 @@ import { LandingPage } from './components/LandingPage';
 import { MainPlatform } from './components/MainPlatform';
 import { LoginDialog } from './components/LoginDialog';
 import { Toaster } from './components/ui/sonner';
-import { UserProfile } from './lib/types';
+import { UserProfile, AuthUserData } from './lib/types';
 import { toggleBookmark, getBookmarks } from './lib/api/bookmark';
 import { toast } from 'sonner';
-import { logout as apiLogout, updateUserProfile as apiUpdateUserProfile, updateUserInterests as apiUpdateUserInterests, getUserProfile, getUserInterests } from './lib/api/auth';
+import { logout as apiLogout, updateUserProfile as apiUpdateUserProfile, getUserProfile, getUserInterests } from './lib/api/auth';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -19,90 +19,69 @@ export default function App() {
     setShowLoginDialog(true);
   };
 
-  const handleLoginSuccess = async (username: string) => {
-    setCurrentUsername(username);
+  const handleLoginSuccess = async (user: AuthUserData) => {
+    setCurrentUsername(user.id);
+
+    // 서버 응답에 일부 필드가 없을 경우 프로필/관심사를 보강
+    const needsFetch =
+      !user.name ||
+      !user.department ||
+      (user.interestAnnouncementCategories?.length ?? 0) +
+        (user.interestFields?.length ?? 0) +
+        (user.interestProgramCategories?.length ?? 0) === 0;
+
+    let enrichedUser = user;
+
+    if (needsFetch) {
+      try {
+        const profileResp = await getUserProfile();
+        const interestsResp = await getUserInterests().catch(() => null);
+
+        const profileData = (profileResp as any)?.data ?? profileResp ?? {};
+        const interestData = interestsResp ? (interestsResp as any)?.data ?? interestsResp : undefined;
+
+        enrichedUser = {
+          ...user,
+          ...profileData,
+          interestAnnouncementCategories:
+            interestData?.interestAnnouncementCategoryName ?? user.interestAnnouncementCategories ?? [],
+          interestFields: interestData?.interestFieldName ?? user.interestFields ?? [],
+          interestProgramCategories: interestData?.interestProgramCategoryName ?? user.interestProgramCategories ?? [],
+        };
+      } catch (err) {
+        console.error('로그인 후 프로필 보강 실패:', err);
+        // 보강 실패 시 기존 user 데이터로 진행
+      }
+    }
+
+    const interests = [
+      ...(enrichedUser.interestAnnouncementCategories ?? []),
+      ...(enrichedUser.interestFields ?? []),
+      ...(enrichedUser.interestProgramCategories ?? []),
+    ];
+
+    setUserProfile({
+      username: enrichedUser.id,
+      name: enrichedUser.name ?? '',
+      gender: enrichedUser.gender === 'MALE' ? 'male' : 'female',
+      hasMilitary: enrichedUser.militaryStatus ? 'yes' : 'no',
+      grade: enrichedUser.grade?.toString() ?? null,
+      department: enrichedUser.department ?? '',
+      college: '',
+      status:
+        enrichedUser.enrollmentStatus === 'ENROLLED'
+          ? 'enrolled'
+          : enrichedUser.enrollmentStatus === 'LEAVE'
+          ? 'leave'
+          : 'graduated',
+      semester: enrichedUser.currentSemester?.toString() ?? null,
+      location: enrichedUser.residence ?? '',
+      interests,
+    });
+
+    // 프로필 설정 이후 로그인 상태 전환
     setIsLoggedIn(true);
     setShowLoginDialog(false);
-
-    // 프로필 조회
-    try {
-      const profileResp = await getUserProfile();
-      const profileData = (profileResp as any).data || profileResp;
-
-      // 관심 분야 조회
-      let allInterests: string[] = [];
-      try {
-        const interestsResp = await getUserInterests();
-        const interestsData = (interestsResp as any).data || interestsResp;
-        
-        if (interestsData) {
-          // 세 가지 관심 분야 배열 통합
-          const announcementCategories = interestsData.interestAnnouncementCategoryName || [];
-          const fieldNames = interestsData.interestFieldName || [];
-          const programCategories = interestsData.interestProgramCategoryName || [];
-          
-          allInterests = [
-            ...announcementCategories,
-            ...fieldNames,
-            ...programCategories
-          ];
-        }
-      } catch (interestsError) {
-        console.error('관심 분야 조회 오류:', interestsError);
-        // 관심 분야 조회 실패해도 프로필은 계속 로드
-      }
-
-      if (profileData && profileData.id) {
-        // 백엔드 응답 매핑: MALE/FEMALE -> male/female, ENROLLED/LEAVE/GRADUATED -> enrolled/leave/graduated
-        const mapped: UserProfile = {
-          username: profileData.id,
-          name: profileData.name || '',
-          gender: profileData.gender ? profileData.gender.toLowerCase() as 'male' | 'female' : 'male',
-          hasMilitary: profileData.militaryStatus ? 'yes' : 'no',
-          grade: profileData.grade ? String(profileData.grade) : null,
-          department: profileData.department || '',
-          status: profileData.enrollmentStatus ? profileData.enrollmentStatus.toLowerCase() as 'enrolled' | 'leave' | 'graduated' : 'enrolled',
-          semester: profileData.currentSemester ? String(profileData.currentSemester) : null,
-          location: profileData.residence || '',
-          interests: allInterests,
-        };
-
-        setUserProfile(mapped);
-      } else {
-        // 프로필 데이터가 없으면 기본 프로필 생성
-        const defaultProfile: UserProfile = {
-          username: username,
-          name: '',
-          gender: 'male',
-          hasMilitary: 'no',
-          grade: null,
-          department: '',
-          status: 'enrolled',
-          semester: null,
-          location: '',
-          interests: allInterests,
-        };
-        setUserProfile(defaultProfile);
-      }
-    } catch (error) {
-      console.error('프로필 조회 오류:', error);
-      toast.error('프로필을 불러오는 중 오류가 발생했습니다.');
-      
-      // 에러 발생 시에도 기본 프로필 생성
-      const defaultProfile: UserProfile = {
-        username: username,
-        name: '',
-        gender: 'male',
-        hasMilitary: 'no',
-        grade: null,
-        department: '',
-        status: 'enrolled',
-        semester: null,
-        location: '',
-        interests: [],
-      };
-      setUserProfile(defaultProfile);
-    }
 
     // 북마크 목록 초기화
     try {
@@ -135,34 +114,20 @@ export default function App() {
         residence: profile.location,
       };
       
-      // 1. 프로필 업데이트
       const response = await apiUpdateUserProfile(updateRequest);
       
       if (!response.isSuccess) {
         toast.error(response.message || '프로필 업데이트 실패');
-        return;
+      } else {
+        toast.success('프로필이 업데이트되었습니다.');
       }
-
-      // 2. 관심 분야 업데이트 (3개 배열로 분리)
-      const announcementCategories = ['학사', '장학', '국제교류', '외국인유학생', '채용', '봉사', '기타 공지'];
-      const fieldKeywords = ['데이터', '반도체', '통신', '방산', '자동차'];
-      
-      const interestsRequest = {
-        interestAnnouncementCategoryName: profile.interests.filter(i => announcementCategories.includes(i)),
-        interestFieldName: profile.interests.filter(i => fieldKeywords.includes(i)),
-        interestProgramCategoryName: profile.interests.filter(i => 
-          !announcementCategories.includes(i) && !fieldKeywords.includes(i)
-        ),
-      };
-      
-      await apiUpdateUserInterests(interestsRequest);
-      toast.success('프로필이 업데이트되었습니다.');
     } catch (error) {
       console.error('프로필 업데이트 오류:', error);
-      const errorMessage = error instanceof Error ? error.message : '프로필 업데이트 중 오류가 발생했습니다.';
-      toast.error(errorMessage);
-      throw error; // 에러를 다시 throw하여 상위에서 처리 가능하도록
+      toast.error('프로필 업데이트 중 오류가 발생했습니다.');
     }
+    
+    // TODO: Supabase 연동 - 프로필 업데이트
+    // await supabase.from('profiles').update(profile).eq('username', profile.username);
   };
 
   const handleLogout = async () => {
@@ -178,6 +143,9 @@ export default function App() {
       setBookmarkedNotices(new Set());
       toast.success('로그아웃되었습니다.');
     }
+    
+    // TODO: Supabase 연동 - 로그아웃
+    // await supabase.auth.signOut();
   };
 
   const toggleNoticeBookmark = async (id: string) => {
@@ -230,18 +198,14 @@ export default function App() {
             onLoginSuccess={handleLoginSuccess}
           />
         </>
-      ) : userProfile ? (
+      ) : (
         <MainPlatform 
-          userProfile={userProfile} 
+          userProfile={userProfile!} 
           onLogout={handleLogout}
           onUpdateProfile={handleUpdateProfile}
           bookmarkedPolicies={bookmarkedNotices}
           onTogglePolicyBookmark={toggleNoticeBookmark}
         />
-      ) : (
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-lg text-gray-600">프로필 로딩 중...</p>
-        </div>
       )}
 
       <Toaster />

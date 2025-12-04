@@ -9,7 +9,7 @@ import { UserProfile } from './UserProfileDialog';
 import { SupportCard, SupportInfo } from './SupportCard';
 import { ArrowLeft, Save, User, Bookmark, Loader2 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
-import { getInterestAnnouncements } from '../lib/api/notices';
+import { getInterestAnnouncements, getInterestPrograms } from '../lib/api/notices';
 
 interface MyPageProps {
   onBack: () => void;
@@ -20,8 +20,8 @@ interface MyPageProps {
   onTogglePolicyBookmark: (id: string) => void;
 }
 
+// 회원가입 화면과 동일한 관심 분야 목록
 const interestOptions = [
-  // 공지 카테고리
   '학사',
   '장학',
   '국제교류',
@@ -29,13 +29,11 @@ const interestOptions = [
   '채용',
   '봉사',
   '기타',
-  // 키워드
   '데이터',
   '반도체',
   '통신',
   '방산',
   '자동차',
-  // 비교과 프로그램
   '상담/멘토링/코칭',
   '공모전/경진대회',
   '특강/워크숍',
@@ -55,6 +53,7 @@ const interestOptions = [
   '창업',
   'AI 비교과',
   '졸업생 특화 프로그램',
+  '기타 프로그램',
 ];
 
 const provinces = {
@@ -100,24 +99,42 @@ export function MyPage({
   useEffect(() => {
     if (allPolicies.length === 0) {
       setIsLoadingPolicies(true);
-      getInterestAnnouncements()
-        .then((resp) => {
-          const data = (resp as any).data || [];
-          const mapped: SupportInfo[] = data.map((n: any) => ({
-            id: String(n.id || n.noticeId || n.notice_id),
-            title: n.title || n.subject || '',
-            summary: n.summary || n.description || '',
-            description: n.description || n.fullText || '',
-            fullText: n.fullText || n.description || '',
-            sourceUrl: n.link || n.sourceUrl || '',
-            category: n.category || '기타',
-            eligibility: n.eligibility || '-',
-            amount: n.amount || '-',
-            deadline: n.deadline || n.date || '',
-            agency: n.agency || '',
-            tags: n.tags || [],
+      Promise.all([getInterestAnnouncements(), getInterestPrograms()])
+        .then(([annResp, progResp]) => {
+          const annData = (annResp as any)?.data || [];
+          const progData = (progResp as any)?.data || [];
+
+          const mappedAnnouncements: SupportInfo[] = annData.map((n: any) => ({
+            id: String(n.id ?? n.noticeId ?? n.notice_id ?? ''),
+            title: n.title || '',
+            summary: n.summary || (n.content ? n.content.substring(0, 100) + '...' : ''),
+            description: n.content || n.summary || '',
+            fullText: n.content || n.summary || '',
+            sourceUrl: n.url || '',
+            category: n.categoryName || n.category || '공지사항',
+            eligibility: n.departmentName || '-',
+            amount: n.status || '-',
+            deadline: n.postedAt || '',
+            agency: n.departmentName || '',
+            tags: ['announcement', n.categoryName || ''],
           }));
-          setLoadedPolicies(mapped);
+
+          const mappedPrograms: SupportInfo[] = progData.map((p: any) => ({
+            id: String(p.id ?? ''),
+            title: p.title || '',
+            summary: p.subtitle || (p.content ? p.content.substring(0, 100) + '...' : ''),
+            description: p.content || p.subtitle || '',
+            fullText: p.content || p.subtitle || '',
+            sourceUrl: p.originalUrl || '',
+            category: p.categoryName || '비교과',
+            eligibility: p.targetAudience || '-',
+            amount: p.capacity ? `정원 ${p.capacity}` : '-',
+            deadline: p.applyEndAt || p.programEndAt || '',
+            agency: p.organizationName || '',
+            tags: ['program', p.categoryName || ''],
+          }));
+
+          setLoadedPolicies([...mappedAnnouncements, ...mappedPrograms]);
         })
         .catch((err) => {
           console.error('공지사항 로드 오류:', err);
@@ -133,13 +150,10 @@ export function MyPage({
   }, [allPolicies]);
   
   // Refs for scrolling to error fields
-  const genderRef = useRef<HTMLDivElement>(null);
-  const militaryRef = useRef<HTMLDivElement>(null);
   const departmentRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const gradeRef = useRef<HTMLDivElement>(null);
   const semesterRef = useRef<HTMLDivElement>(null);
-  const locationRef = useRef<HTMLDivElement>(null);
   const interestsRef = useRef<HTMLDivElement>(null);
 
   const handleInterestToggle = (interest: string) => {
@@ -171,16 +185,19 @@ export function MyPage({
   };
 
   const handleSave = () => {
-    // Validate fields (회원가입과 동일한 필수 필드)
+    // Validate fields (회원가입 필수 항목과 맞춤)
     const newErrors: Record<string, boolean> = {};
-    // 학과만 필수
     if (!profile.department) newErrors.department = true;
-    // 재학 상태 필수
     if (!profile.status) newErrors.status = true;
-    // 재학/휴학인 경우 학년, 학기 필수
-    if (profile.status && profile.status !== 'graduated' && !profile.grade) newErrors.grade = true;
-    if (profile.status && profile.status !== 'graduated' && !profile.semester) newErrors.semester = true;
-    // 관심 분야 최소 1개
+
+    const gradeNum = profile.grade ? parseInt(profile.grade, 10) : NaN;
+    const semesterNum = profile.semester ? parseInt(profile.semester, 10) : NaN;
+
+    if (profile.status && profile.status !== 'graduated') {
+      if (!Number.isFinite(gradeNum) || gradeNum < 1 || gradeNum > 10) newErrors.grade = true;
+      if (!Number.isFinite(semesterNum) || semesterNum < 1 || semesterNum > 20) newErrors.semester = true;
+    }
+
     if (profile.interests.length < 1) newErrors.interests = true;
 
     if (Object.keys(newErrors).length > 0) {
@@ -188,13 +205,10 @@ export function MyPage({
       // Scroll to the first error field
       const firstErrorField = Object.keys(newErrors)[0];
       const ref = {
-        gender: genderRef,
-        military: militaryRef,
         department: departmentRef,
         status: statusRef,
         grade: gradeRef,
         semester: semesterRef,
-        location: locationRef,
         interests: interestsRef,
       }[firstErrorField];
       if (ref.current) {
@@ -204,6 +218,7 @@ export function MyPage({
     }
 
     onUpdateProfile(profile);
+    toast.success('프로필이 업데이트되었습니다');
   };
 
   return (
@@ -272,13 +287,13 @@ export function MyPage({
                     <h3 className="text-blue-600 pb-2 border-b">기본 정보</h3>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2" ref={genderRef}>
+                      <div className="space-y-2">
                         <Label htmlFor="gender">성별</Label>
                         <Select
                           value={profile.gender}
                           onValueChange={(value) => setProfile({ ...profile, gender: value })}
                         >
-                          <SelectTrigger className={errors.gender ? 'border-red-500' : ''}>
+                          <SelectTrigger>
                             <SelectValue placeholder="성별 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -286,16 +301,15 @@ export function MyPage({
                             <SelectItem value="female">여성</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.gender && <p className="text-sm text-red-500">성별을 선택하세요</p>}
                       </div>
 
-                      <div className="space-y-2" ref={militaryRef}>
+                      <div className="space-y-2">
                         <Label htmlFor="military">군필 여부</Label>
                         <Select
                           value={profile.hasMilitary}
                           onValueChange={(value) => setProfile({ ...profile, hasMilitary: value })}
                         >
-                          <SelectTrigger className={errors.military ? 'border-red-500' : ''}>
+                          <SelectTrigger>
                             <SelectValue placeholder="선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -305,7 +319,6 @@ export function MyPage({
                             <SelectItem value="notApplicable">해당없음</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.military && <p className="text-sm text-red-500">군필 여부를 선택하세요</p>}
                       </div>
                     </div>
                   </div>
@@ -358,42 +371,46 @@ export function MyPage({
                           <Label htmlFor="grade">학년</Label>
                           <Input
                             id="grade"
-                            type="text"
-                            placeholder="예: 1, 2, 3, 4"
-                            value={profile.grade || ''}
+                            type="number"
+                            min={1}
+                            max={10}
+                            placeholder="1"
+                            value={profile.grade ?? ''}
                             onChange={(e) => {
-                              const value = e.target.value;
-                              // 빈 값이거나 정수인 경우만 허용
-                              if (value === '' || /^\d+$/.test(value)) {
-                                setProfile({ ...profile, grade: value });
-                              } else {
-                                toast.error('학년은 정수만 입력 가능합니다.');
+                              const next = parseInt(e.target.value, 10);
+                              if (isNaN(next)) {
+                                setProfile({ ...profile, grade: '' });
+                                return;
                               }
+                              const clamped = Math.min(10, Math.max(1, next));
+                              setProfile({ ...profile, grade: clamped.toString() });
                             }}
                             className={errors.grade ? 'border-red-500' : ''}
                           />
-                          {errors.grade && <p className="text-sm text-red-500">학년을 입력하세요</p>}
+                          {errors.grade && <p className="text-sm text-red-500">학년을 입력하세요 (1-10)</p>}
                         </div>
 
                         <div className="space-y-2" ref={semesterRef}>
                           <Label htmlFor="semester">학기 (전체 이수 학기)</Label>
                           <Input
                             id="semester"
-                            type="text"
-                            placeholder="예: 1, 2, 3..."
-                            value={profile.semester || ''}
+                            type="number"
+                            min={1}
+                            max={20}
+                            placeholder="1"
+                            value={profile.semester ?? ''}
                             onChange={(e) => {
-                              const value = e.target.value;
-                              // 빈 값이거나 정수인 경우만 허용
-                              if (value === '' || /^\d+$/.test(value)) {
-                                setProfile({ ...profile, semester: value });
-                              } else {
-                                toast.error('학기는 정수만 입력 가능합니다.');
+                              const next = parseInt(e.target.value, 10);
+                              if (isNaN(next)) {
+                                setProfile({ ...profile, semester: '' });
+                                return;
                               }
+                              const clamped = Math.min(20, Math.max(1, next));
+                              setProfile({ ...profile, semester: clamped.toString() });
                             }}
                             className={errors.semester ? 'border-red-500' : ''}
                           />
-                          {errors.semester && <p className="text-sm text-red-500">학기를 입력하세요</p>}
+                          {errors.semester && <p className="text-sm text-red-500">학기를 입력하세요 (1-20)</p>}
                         </div>
                       </div>
                     )}
@@ -403,7 +420,7 @@ export function MyPage({
                   <div className="space-y-4">
                     <h3 className="text-blue-600 pb-2 border-b">거주 정보</h3>
 
-                    <div className="space-y-2" ref={locationRef}>
+                    <div className="space-y-2">
                       <Label>거주지</Label>
                       <div className="grid grid-cols-2 gap-2">
                         <Select value={selectedProvince} onValueChange={handleProvinceChange}>
@@ -437,7 +454,6 @@ export function MyPage({
                           </SelectContent>
                         </Select>
                       </div>
-                      {errors.location && <p className="text-sm text-red-500">거주지를 선택하세요</p>}
                     </div>
                   </div>
 

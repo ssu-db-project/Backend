@@ -40,16 +40,24 @@ export async function askAnnouncementChatbot(userId: string, question: string): 
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ userId, question } as ChatRequest),
+      body: JSON.stringify({ userId: String(userId), question } as ChatRequest),
     });
 
+    const text = await response.text();
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `공지 질문 실패: ${response.statusText}`);
+      let message = `공지 질문 실패: ${response.statusText}`;
+      try {
+        const parsed = text ? JSON.parse(text) : null;
+        if (parsed?.message) message = parsed.message;
+      } catch {
+        /* ignore parse error */
+      }
+      throw new Error(message);
     }
 
-    // 응답이 String으로 직접 반환됨
-    return await response.text();
+    // 응답이 String으로 직접 반환됨 (명세)
+    return text;
   } catch (error) {
     console.error('공지 질문 오류:', error);
     throw error;
@@ -83,16 +91,24 @@ export async function askProgramChatbot(userId: string, question: string): Promi
         'Content-Type': 'application/json',
       },
       credentials: 'include',
-      body: JSON.stringify({ userId, question } as ChatRequest),
+      body: JSON.stringify({ userId: String(userId), question } as ChatRequest),
     });
 
+    const text = await response.text();
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || `프로그램 질문 실패: ${response.statusText}`);
+      let message = `프로그램 질문 실패: ${response.statusText}`;
+      try {
+        const parsed = text ? JSON.parse(text) : null;
+        if (parsed?.message) message = parsed.message;
+      } catch {
+        /* ignore parse error */
+      }
+      throw new Error(message);
     }
 
-    // 응답이 String으로 직접 반환됨
-    return await response.text();
+    // 응답이 String으로 직접 반환됨 (명세)
+    return text;
   } catch (error) {
     console.error('프로그램 질문 오류:', error);
     throw error;
