@@ -60,7 +60,7 @@ export function MainPlatform({
       amount: n.status || '-',
       deadline: n.postedAt || '',
       agency: n.departmentName || '',
-      tags: ['announcement', n.categoryName || ''],
+      tags: [],
     }));
 
     const mappedPrograms: SupportInfo[] = programData.map((p: any) => ({
@@ -75,7 +75,7 @@ export function MainPlatform({
       amount: p.capacity ? `정원 ${p.capacity}` : '-',
       deadline: p.applyEndAt || p.programEndAt || '',
       agency: p.organizationName || '',
-      tags: ['program', p.categoryName || ''],
+      tags: [],
     }));
 
     setSupports([...mappedAnnouncements, ...mappedPrograms]);
@@ -95,7 +95,7 @@ export function MainPlatform({
     if (userProfile) loadInitialSupports();
   }, [userProfile]);
 
-  // Keyword search: 전체 DB 탭에서만 검색 (길이 >= 2)
+  // Keyword search: 전체 DB 탭에서만 검색 (길이 >= 1)
   useEffect(() => {
     let mounted = true;
     async function doSearch() {
@@ -106,8 +106,16 @@ export function MainPlatform({
       try {
         const keyword = (searchQuery || '').trim();
         if (keyword.length < 1) {
-          // 검색어가 없으면 검색 호출을 하지 않고 리스트를 비운다
-          setSupports([]);
+          // 검색어가 없으면 관심 기반 데이터를 대신 보여준다
+          if (userProfile) {
+            try {
+              await fetchInterestSupports();
+            } catch {
+              if (mounted) setSupports([]);
+            }
+          } else {
+            setSupports([]);
+          }
           return;
         }
         // 공지/비교과 통합 검색 API 호출
@@ -126,7 +134,7 @@ export function MainPlatform({
           amount: '-',
           deadline: '',
           agency: result.type === 'announcement' ? '공지사항' : '비교과 프로그램',
-          tags: [result.type],
+          tags: [],
         }));
         if (mounted) {
           if (mapped.length === 0) {

@@ -371,6 +371,10 @@ INSERT INTO department (id, name, college_id) VALUES ('D050', '차세대반도�
      '2025-12-04 21:29:32' -- 로그 타임스탬프 근사치 사용
  );
 
+
+ -- INSERT 문 구분
+
+
 -- ANNOUNCEMENT 테이블 INSERT 문
  -- 1. 채용 2026-1학기 언론홍보학과 교육연구조교 모집 안내
  INSERT INTO announcement (

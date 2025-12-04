@@ -20,8 +20,8 @@ public class CrawlerTest implements CommandLineRunner {
         System.out.println("=========== [TEST] 크롤링 테스트 시작 ===========");
 
         // 여기서 크롤링 메서드 강제 실행
-        ssuPath.crawl();
-        ssuAnnouncement.crawl();
+        // ssuPath.crawl();
+        // ssuAnnouncement.crawl();
         System.out.println("=========== [TEST] 크롤링 테스트 종료 ===========");
 
 
